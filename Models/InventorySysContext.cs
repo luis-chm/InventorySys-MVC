@@ -1,6 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
+using System;
+using System.Collections.Generic;
 
 namespace InventorySys.Models;
 
@@ -289,4 +290,28 @@ public partial class InventorySysContext : DbContext
     }
 
     partial void OnModelCreatingPartial(ModelBuilder modelBuilder);
+
+    // Encripta un password usando la función del SP en BD
+    public string EncriptarPassword(string passwordSinEncriptar)
+    {
+        if (string.IsNullOrEmpty(passwordSinEncriptar))
+            throw new ArgumentException("La contraseña no puede estar vacía");
+
+        try
+        {
+            var result = Database.SqlQueryRaw<string>(
+                "SELECT dbo.EncryptPassword({0})",
+                passwordSinEncriptar
+            ).AsEnumerable().FirstOrDefault();
+
+            if (string.IsNullOrEmpty(result))
+                throw new Exception("Error al encriptar la contraseña");
+
+            return result;
+        }
+        catch (Exception ex)
+        {
+            throw new Exception("Error: " + ex.Message, ex);
+        }
+    }
 }
