@@ -1,4 +1,5 @@
 ﻿using InventorySys.Models;
+using InventorySys.Helpers;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
@@ -7,6 +8,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Security.Claims;
 
 namespace InventorySys.Controllers
 {
@@ -20,9 +22,18 @@ namespace InventorySys.Controllers
             _context = context;
         }
 
-        // GET: Users
+        private string GetUserRole()
+        {
+            return User.FindFirst(ClaimTypes.Role)?.Value ?? "";
+        }
+
         public async Task<IActionResult> Index()
         {
+            var userRole = GetUserRole();
+
+            if (!RolePermissionHelper.CanAccessModule(userRole, RolePermissionHelper.SystemModule.Users))
+                return RedirectToAction("AccessDenied", "Home");
+
             var inventorySysContext = _context.TblUsers.Include(t => t.Role);
             return View(await inventorySysContext.ToListAsync());
         }
@@ -32,12 +43,16 @@ namespace InventorySys.Controllers
             return _context.TblUsers.Any(e => e.UserId == id);
         }
 
-        // === METODOS MODALS ===
-
         // GET: Users/CreateModal
         public IActionResult CreateModal()
         {
-            ViewBag.RoleId = new SelectList(_context.TblRoles.Where(r => r.RoleActive == true), "RoleId", "RoleName");
+            var userRole = GetUserRole();
+
+            if (!RolePermissionHelper.CanCreate(userRole, RolePermissionHelper.SystemModule.Users))
+                return NotFound();
+
+            var roles = _context.TblRoles.Where(r => r.RoleActive == true).ToList();
+            ViewBag.RoleId = new SelectList(roles, "RoleId", "RoleName", roles.FirstOrDefault()?.RoleId);
             return PartialView("Create", new TblUser());
         }
 
@@ -46,34 +61,45 @@ namespace InventorySys.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> CreateModal([Bind("UserId,UserName,UserEmail,UserEncryptedPassword,RoleId,UserActive")] TblUser tblUser)
         {
+            var userRole = GetUserRole();
+
+            if (!RolePermissionHelper.CanCreate(userRole, RolePermissionHelper.SystemModule.Users))
+                return Json(new { success = false, message = "No tienes permiso para crear usuarios." });
+
             if (ModelState.IsValid)
             {
-                _context.Add(tblUser);
-                await _context.SaveChangesAsync();
-                return Json(new { success = true, message = "Usuario creado exitosamente." });
+                try
+                {
+                    tblUser.UserEncryptedPassword = _context.EncriptarPassword(tblUser.UserEncryptedPassword);
+                    _context.Add(tblUser);
+                    await _context.SaveChangesAsync();
+
+                    return Json(new { success = true, message = "Usuario creado exitosamente." });
+                }
+                catch (Exception ex)
+                {
+                    return Json(new { success = false, message = ex.Message });
+                }
             }
+
             ViewBag.RoleId = new SelectList(_context.TblRoles.Where(r => r.RoleActive == true), "RoleId", "RoleName", tblUser.RoleId);
             return PartialView("Create", tblUser);
-        }
-
-        // GET: Users/DetailsModal/5
-        public async Task<IActionResult> DetailsModal(int? id)
-        {
-            if (id == null) return NotFound();
-            var tblUser = await _context.TblUsers
-                .Include(t => t.Role)
-                .FirstOrDefaultAsync(m => m.UserId == id);
-            if (tblUser == null) return NotFound();
-            return PartialView("Details", tblUser);
         }
 
         // GET: Users/EditModal/5
         public async Task<IActionResult> EditModal(int? id)
         {
+            var userRole = GetUserRole();
+
+            if (!RolePermissionHelper.CanEdit(userRole, RolePermissionHelper.SystemModule.Users))
+                return NotFound();
+
             if (id == null) return NotFound();
             var tblUser = await _context.TblUsers.FindAsync(id);
             if (tblUser == null) return NotFound();
-            ViewBag.RoleId = new SelectList(_context.TblRoles.Where(r => r.RoleActive == true), "RoleId", "RoleName", tblUser.RoleId);
+
+            var roles = _context.TblRoles.Where(r => r.RoleActive == true).ToList();
+            ViewBag.RoleId = new SelectList(roles, "RoleId", "RoleName", tblUser.RoleId);
             return PartialView("Edit", tblUser);
         }
 
@@ -82,13 +108,30 @@ namespace InventorySys.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> EditModal(int id, [Bind("UserId,UserName,UserEmail,UserEncryptedPassword,RoleId,UserActive")] TblUser tblUser)
         {
+            var userRole = GetUserRole();
+
+            if (!RolePermissionHelper.CanEdit(userRole, RolePermissionHelper.SystemModule.Users))
+                return Json(new { success = false, message = "No tienes permiso para editar usuarios." });
+
             if (id != tblUser.UserId) return NotFound();
+
             if (ModelState.IsValid)
             {
                 try
                 {
+                    if (!string.IsNullOrEmpty(tblUser.UserEncryptedPassword))
+                    {
+                        tblUser.UserEncryptedPassword = _context.EncriptarPassword(tblUser.UserEncryptedPassword);
+                    }
+                    else
+                    {
+                        var usuarioActual = await _context.TblUsers.FindAsync(id);
+                        tblUser.UserEncryptedPassword = usuarioActual?.UserEncryptedPassword!;
+                    }
+
                     _context.Update(tblUser);
                     await _context.SaveChangesAsync();
+
                     return Json(new { success = true, message = "Usuario actualizado exitosamente." });
                 }
                 catch (DbUpdateConcurrencyException)
@@ -98,7 +141,12 @@ namespace InventorySys.Controllers
                     else
                         throw;
                 }
+                catch (Exception ex)
+                {
+                    return Json(new { success = false, message = ex.Message });
+                }
             }
+
             ViewBag.RoleId = new SelectList(_context.TblRoles.Where(r => r.RoleActive == true), "RoleId", "RoleName", tblUser.RoleId);
             return PartialView("Edit", tblUser);
         }
@@ -106,6 +154,11 @@ namespace InventorySys.Controllers
         // GET: Users/DeleteModal/5
         public async Task<IActionResult> DeleteModal(int? id)
         {
+            var userRole = GetUserRole();
+
+            if (!RolePermissionHelper.CanDelete(userRole, RolePermissionHelper.SystemModule.Users))
+                return NotFound();
+
             if (id == null) return NotFound();
             var tblUser = await _context.TblUsers
                 .Include(t => t.Role)
@@ -119,14 +172,26 @@ namespace InventorySys.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteModalConfirmed(int id)
         {
-            var tblUser = await _context.TblUsers.FindAsync(id);
-            if (tblUser != null)
+            var userRole = GetUserRole();
+
+            if (!RolePermissionHelper.CanDelete(userRole, RolePermissionHelper.SystemModule.Users))
+                return Json(new { success = false, message = "No tienes permiso para eliminar usuarios." });
+
+            try
             {
-                _context.TblUsers.Remove(tblUser);
-                await _context.SaveChangesAsync();
-                return Json(new { success = true, message = "Usuario eliminado exitosamente." });
+                var tblUser = await _context.TblUsers.FindAsync(id);
+                if (tblUser != null)
+                {
+                    _context.TblUsers.Remove(tblUser);
+                    await _context.SaveChangesAsync();
+                    return Json(new { success = true, message = "Usuario eliminado exitosamente." });
+                }
+                return Json(new { success = false, message = "Usuario no encontrado." });
             }
-            return Json(new { success = false, message = "Usuario no encontrado." });
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = ex.Message });
+            }
         }
     }
 }

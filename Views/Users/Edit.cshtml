@@ -57,7 +57,6 @@
                     <i class="bi bi-person-badge me-1"></i>Rol del Usuario <span class="text-danger">*</span>
                 </label>
                 <select asp-for="RoleId" class="form-select" asp-items="ViewBag.RoleId" required>
-                    <option value="">Seleccione un rol</option>
                 </select>
                 <span asp-validation-for="RoleId" class="text-danger small"></span>
             </div>
@@ -87,11 +86,11 @@
     </div>
 
     <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-            <i class="bi bi-x-circle me-1"></i>Cancelar
-        </button>
         <button type="submit" class="btn btn-primary">
             <i class="bi bi-check-circle me-1"></i>Actualizar Usuario
+        </button>
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+            <i class="bi bi-x-circle me-1"></i>Cancelar
         </button>
     </div>
 </form>
