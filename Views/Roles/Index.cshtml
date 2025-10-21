@@ -2,84 +2,180 @@
 
 @{
     ViewData["Title"] = "Index";
+    var userRole = User.FindFirst(System.Security.Claims.ClaimTypes.Role)?.Value;
 }
 
 <!-- Breadcrumb fuera del card -->
-<div class="container-fluid mb-3">
-    <div class="row">
-        <div class="col-12">
-            <ol class="breadcrumb float-sm-end mb-0">
-                <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">Home</a></li>
-                <li class="breadcrumb-item active" aria-current="page">Roles</li>
-            </ol>
+<div class="app-content-header">
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-sm-6">
+                <h3 class="mb-0">
+                    <i class="bi bi-person-fill-gear me-2"></i>Roles
+                </h3>
+            </div>
+            <div class="col-sm-6">
+                <ol class="breadcrumb float-sm-end">
+                    <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">Inicio</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">Roles</li>
+                </ol>
+            </div>
         </div>
     </div>
 </div>
 
-<!-- Content Section con estilo AdminLTE -->
+<!-- Content Section -->
 <section class="content">
     <div class="container-fluid">
-        <!-- Card con outline primary -->
-        <div class="card card-outline card-primary">
-            <!-- Card Header con estilo AdminLTE -->
-            <div class="card-header">
-                <h1 class="card-title fw-bold">
-                    <i class="bi bi-shield-check me-2"></i>
-                    Roles
-                </h1>
+        <!-- Card con sombra -->
+        <div class="card shadow-sm">
+            <div class="card-header bg-white py-3 border-bottom">
+                <div class="row align-items-center">
+                    <div class="col-12">
+                        @if (RolePermissionHelper.CanCreate(userRole, RolePermissionHelper.SystemModule.Roles))
+                        {
+                            <button type="button" class="btn btn-success" onclick="openCreateModal()">
+                                <i class="bi bi-plus-lg"></i> Crear Nuevo
+                            </button>
+                        }
+                    </div>
+                </div>
             </div>
 
             <!-- Card Body -->
             <div class="card-body">
-                <div style="margin-left: 15px;">
-                    <div class="row">
-                        <div class="col-12">
-                            <a asp-action="Create" class="btn btn-success">
-                                <i class="bi bi-plus-lg"></i> Nuevo
-                            </a>
-                        </div>
-                    </div>
-                    <br />
-
-                    <table class="table table-bordered table-striped dataTables1">
-                        <thead>
+                <table class="table table-bordered table-striped dataTables1">
+                    <thead>
+                        <tr>
+                            <th>ID de Rol</th>
+                            <th>Nombre de Rol</th>
+                            <th>Estado de Rol</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in Model)
+                        {
                             <tr>
-                                <th>ID de Rol</th>
-                                <th>Nombre de Rol</th>
-                                <th>Estado de Rol</th>
-                                <th>Acciones</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach (var item in Model)
-                            {
-                                <tr>
-                                    <td>@item.RoleId</td>
-                                    <td>@item.RoleName</td>
-                                    <td class="text-center">
-                                        <span class="badge @(item.RoleActive ? "bg-success" : "bg-danger") fs-6">
-                                            <i class="bi @(item.RoleActive ? "bi-check-circle" : "bi-x-circle") me-1"></i>@(item.RoleActive ? "Activo" : "Inactivo")
-                                        </span>
-                                    </td>
-                                    <td>
-                                        <div class="d-flex justify-content-center gap-1">
-                                            <a asp-action="Edit" asp-route-id="@item.RoleId" class="btn btn-sm btn-primary">
+                                <td>@item.RoleId</td>
+                                <td>
+                                    <i class="bi bi-person-fill-gear me-2 text-primary"></i>
+                                    @item.RoleName
+                                </td>
+                                <td class="text-center">
+                                    <span class="badge @(item.RoleActive ? "bg-success" : "bg-danger") fs-6">
+                                        <i class="bi @(item.RoleActive ? "bi-check-circle" : "bi-x-circle") me-1"></i>
+                                        @(item.RoleActive ? "Activo" : "Inactivo")
+                                    </span>
+                                </td>
+                                <td>
+                                    <div class="d-flex justify-content-center gap-1">
+                                        @if (RolePermissionHelper.CanEdit(userRole, RolePermissionHelper.SystemModule.Roles))
+                                        {
+                                            <button class="btn btn-sm btn-primary" onclick="openEditModal(@item.RoleId)">
                                                 <i class="bi bi-pencil-square"></i> Editar
-                                            </a>
-                                            <a asp-action="Delete" asp-route-id="@item.RoleId" class="btn btn-sm btn-danger" onclick="return confirm('¿Deseas eliminar el rol?')">
+                                            </button>
+                                        }
+
+                                        @if (RolePermissionHelper.CanDelete(userRole, RolePermissionHelper.SystemModule.Roles))
+                                        {
+                                            <button class="btn btn-sm btn-danger" onclick="openDeleteModal(@item.RoleId)">
                                                 <i class="bi bi-trash3"></i> Eliminar
-                                            </a>
-                                            <a asp-action="Details" asp-route-id="@item.RoleId" class="btn btn-sm btn-info">
-                                                <i class="bi bi-eye"></i> Ver
-                                            </a>
-                                        </div>
-                                    </td>
-                                </tr>
-                            }
-                        </tbody>
-                    </table>
-                </div>
+                                            </button>
+                                        }
+
+                                        @if (!RolePermissionHelper.CanEdit(userRole, RolePermissionHelper.SystemModule.Roles) &&
+                                                                            !RolePermissionHelper.CanDelete(userRole, RolePermissionHelper.SystemModule.Roles))
+                                        {
+                                            <span class="text-muted">
+                                                <i class="bi bi-lock-fill me-1"></i> Sin acceso
+                                            </span>
+                                        }
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
             </div>
         </div>
     </div>
 </section>
+
+<!-- Modal Container -->
+<div class="modal fade" id="roleModal" tabindex="-1" aria-labelledby="roleModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content" id="modalContent">
+            <!-- El contenido se cargará aquí dinámicamente -->
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function setupAjaxAntiForgeryToken() {
+            var token = $('input[name="__RequestVerificationToken"]').val();
+
+            if (token) {
+                $.ajaxSetup({
+                    beforeSend: function(xhr, settings) {
+                        if (settings.type === 'POST' && !this.crossDomain) {
+                            xhr.setRequestHeader("RequestVerificationToken", token);
+                        }
+                    }
+                });
+            }
+        }
+
+        $(document).ready(function() {
+            setupAjaxAntiForgeryToken();
+        });
+
+        function openCreateModal() {
+            loadModal('/Roles/CreateModal', 'Crear Rol');
+        }
+
+        function openEditModal(id) {
+            loadModal('/Roles/EditModal/' + id, 'Editar Rol');
+        }
+
+        function openDeleteModal(id) {
+            loadModal('/Roles/DeleteModal/' + id, 'Eliminar Rol');
+        }
+
+        function loadModal(url, title) {
+            $.get(url)
+                .done(function(data) {
+                    $('#modalContent').html(data);
+                    var modal = new bootstrap.Modal(document.getElementById('roleModal'));
+                    modal.show();
+                    setupAjaxAntiForgeryToken();
+                })
+                .fail(function(xhr, status, error) {
+                    // Si es 404, no hacer nada (permiso denegado silenciosamente)
+                    if (xhr.status === 404) {
+                        return;
+                    }
+                    alert('Error al cargar el modal: ' + error);
+                });
+        }
+
+        function reloadPage() {
+            location.reload();
+        }
+
+        function closeModal() {
+            var modalElement = document.getElementById('roleModal');
+            var modal = bootstrap.Modal.getInstance(modalElement);
+            if (modal) {
+                modal.hide();
+            }
+
+            setTimeout(function() {
+                $('.modal-backdrop').remove();
+                $('body').removeClass('modal-open');
+                $('body').css('padding-right', '');
+            }, 300);
+        }
+    </script>
+}
