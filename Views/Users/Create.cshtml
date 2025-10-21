@@ -1,0 +1,133 @@
+﻿@model InventorySys.Models.TblUser
+
+@{
+    ViewData["Title"] = "Create";
+}
+
+<div class="modal-header bg-success text-white">
+    <h5 class="modal-title">
+        <i class="bi bi-person-plus me-2"></i>Crear Nuevo Usuario
+    </h5>
+    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+</div>
+
+<form id="createForm">
+    @Html.AntiForgeryToken()
+    <div class="modal-body">
+        <div asp-validation-summary="ModelOnly" class="alert alert-danger d-none"></div>
+
+        <div class="row g-3">
+            <!-- Nombre de Usuario -->
+            <div class="col-md-6">
+                <label asp-for="UserName" class="form-label fw-semibold">
+                    <i class="bi bi-person me-1"></i>Nombre de Usuario <span class="text-danger">*</span>
+                </label>
+                <input asp-for="UserName" class="form-control" placeholder="Ingrese el nombre de usuario" required />
+                <span asp-validation-for="UserName" class="text-danger small"></span>
+            </div>
+
+            <!-- Email -->
+            <div class="col-md-6">
+                <label asp-for="UserEmail" class="form-label fw-semibold">
+                    <i class="bi bi-envelope me-1"></i>Correo Electrónico <span class="text-danger">*</span>
+                </label>
+                <input asp-for="UserEmail" type="email" class="form-control" placeholder="correo@ejemplo.com" required />
+                <span asp-validation-for="UserEmail" class="text-danger small"></span>
+            </div>
+
+            <!-- Password -->
+            <div class="col-md-6">
+                <label asp-for="UserEncryptedPassword" class="form-label fw-semibold">
+                    <i class="bi bi-lock me-1"></i>Contraseña <span class="text-danger">*</span>
+                </label>
+                <div class="input-group">
+                    <input asp-for="UserEncryptedPassword" type="password" id="createPassword" class="form-control" placeholder="Ingrese la contraseña" required />
+                    <button class="btn btn-outline-secondary" type="button" onclick="togglePassword('createPassword', this)">
+                        <i class="bi bi-eye-slash"></i>
+                    </button>
+                </div>
+                <span asp-validation-for="UserEncryptedPassword" class="text-danger small"></span>
+            </div>
+
+            <!-- Rol -->
+            <div class="col-md-6">
+                <label asp-for="RoleId" class="form-label fw-semibold">
+                    <i class="bi bi-person-badge me-1"></i>Rol del Usuario <span class="text-danger">*</span>
+                </label>
+                <select asp-for="RoleId" class="form-select" asp-items="ViewBag.RoleId" required>
+                    <option value="">Seleccione un rol</option>
+                </select>
+                <span asp-validation-for="RoleId" class="text-danger small"></span>
+            </div>
+
+            <!-- Estado del Usuario -->
+            <div class="col-12">
+                <label class="form-label fw-semibold">
+                    <i class="bi bi-toggle-on me-1"></i>Estado del Usuario <span class="text-danger">*</span>
+                </label>
+                <div class="mt-2">
+                    <div class="form-check form-check-inline">
+                        <input asp-for="UserActive" type="radio" value="true" class="form-check-input" id="createActiveTrue" checked required />
+                        <label class="form-check-label text-success fw-semibold" for="createActiveTrue">
+                            <i class="bi bi-check-circle me-1"></i>Activo
+                        </label>
+                    </div>
+                    <div class="form-check form-check-inline">
+                        <input asp-for="UserActive" type="radio" value="false" class="form-check-input" id="createActiveFalse" required />
+                        <label class="form-check-label text-danger fw-semibold" for="createActiveFalse">
+                            <i class="bi bi-x-circle me-1"></i>Inactivo
+                        </label>
+                    </div>
+                </div>
+                <span asp-validation-for="UserActive" class="text-danger small"></span>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+            <i class="bi bi-x-circle me-1"></i>Cancelar
+        </button>
+        <button type="submit" class="btn btn-success">
+            <i class="bi bi-check-circle me-1"></i>Crear Usuario
+        </button>
+    </div>
+</form>
+<script>
+    $('#createForm').on('submit', function(e) {
+        e.preventDefault();
+
+        $.ajax({
+            url: '/Users/CreateModal',
+            type: 'POST',
+            data: $(this).serialize(),
+            success: function(response) {
+                if (response.success) {
+                    closeModal();
+                    reloadPage();
+                    alert(response.message);
+                } else {
+                    $('#modalContent').html(response);
+                }
+            },
+            error: function() {
+                alert('Error al crear el usuario');
+            }
+        });
+    });
+
+    function togglePassword(inputId, button) {
+        const input = document.getElementById(inputId);
+        const icon = button.querySelector('i');
+
+        if (input.type === 'password') {
+            input.type = 'text';
+            icon.classList.remove('bi-eye-slash');
+            icon.classList.add('bi-eye');
+        } else {
+            input.type = 'password';
+            icon.classList.remove('bi-eye');
+            icon.classList.add('bi-eye-slash');
+        }
+    }
+</script>

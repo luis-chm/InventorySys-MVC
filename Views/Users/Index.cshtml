@@ -1,0 +1,188 @@
+﻿@model IEnumerable<InventorySys.Models.TblUser>
+
+@{
+    ViewData["Title"] = "Index";
+}
+
+<!-- Breadcrumb fuera del card -->
+<div class="container-fluid mb-3">
+    <div class="row">
+        <div class="col-12">
+            <ol class="breadcrumb float-sm-end mb-0">
+                <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">Home</a></li>
+                <li class="breadcrumb-item active" aria-current="page">Usuarios</li>
+            </ol>
+        </div>
+    </div>
+</div>
+
+<!-- Content Section con estilo AdminLTE -->
+<section class="content">
+    <div class="container-fluid">
+        <!-- Card con outline primary -->
+        <div class="card card-outline card-primary">
+            <!-- Card Header con estilo AdminLTE -->
+            <div class="card-header">
+                <h1 class="card-title fw-bold">
+                    <i class="bi bi-people me-2"></i>
+                    Usuarios
+                </h1>
+            </div>
+
+            <!-- Card Body -->
+            <div class="card-body">
+                <div style="margin-left: 15px;">
+                    <div class="row">
+                        <div class="col-12">
+                            <button type="button" class="btn btn-success" onclick="openCreateModal()">
+                                <i class="bi bi-plus-lg"></i> Nuevo
+                            </button>
+                        </div>
+                    </div>
+                    <br />
+
+                    <table class="table table-bordered table-striped dataTables1">
+                        <thead>
+                            <tr>
+                                <th>ID de Usuario</th>
+                                <th>Nombre de Usuario</th>
+                                <th>Correo Electrónico</th>
+                                <th>Contraseña</th>
+                                <th>Estado de Usuario</th>
+                                <th>Rol</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var item in Model)
+                            {
+                                <tr>
+                                    <td>@item.UserId</td>
+                                    <td>@item.UserName</td>
+                                    <td>@item.UserEmail</td>
+                                    <td>@(new string('*', 8))</td>
+                                    <td class="text-center">
+                                        <span class="badge @(item.UserActive ? "bg-success" : "bg-danger") fs-6">
+                                            <i class="bi @(item.UserActive ? "bi-check-circle" : "bi-x-circle") me-1"></i>@(item.UserActive ? "Activo" : "Inactivo")
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <i class="bi bi-person-badge me-2 @(item.Role.RoleName == "Admin" ? "text-primary" : "text-warning")"></i>@item.Role.RoleName
+                                    </td>
+                                    <td>
+                                        <div class="d-flex justify-content-center gap-1">
+                                            <button class="btn btn-sm btn-primary" onclick="openEditModal(@item.UserId)">
+                                                <i class="bi bi-pencil-square"></i> Editar
+                                            </button>
+                                            <button class="btn btn-sm btn-danger" onclick="openDeleteModal(@item.UserId)">
+                                                <i class="bi bi-trash3"></i> Eliminar
+                                            </button>
+                                            <button class="btn btn-sm btn-info" onclick="openDetailsModal(@item.UserId)">
+                                                <i class="bi bi-eye"></i> Ver
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Modal Container -->
+<div class="modal fade" id="userModal" tabindex="-1" aria-labelledby="userModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content" id="modalContent">
+            <!-- El contenido se cargará aquí dinámicamente -->
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // Configuración token antifalsificación para AJAX
+        function setupAjaxAntiForgeryToken() {
+            var token = $('input[name="__RequestVerificationToken"]').val();
+
+            if (token) {
+                $.ajaxSetup({
+                    beforeSend: function(xhr, settings) {
+                        if (settings.type === 'POST' && !this.crossDomain) {
+                            xhr.setRequestHeader("RequestVerificationToken", token);
+                        }
+                    }
+                });
+            }
+        }
+
+        $(document).ready(function() {
+            setupAjaxAntiForgeryToken();
+        });
+
+        // Funciones para abrir modals - ACTUALIZADO para usar las rutas Modal
+        function openCreateModal() {
+            loadModal('/Users/CreateModal', 'Crear Usuario');
+        }
+
+        function openEditModal(id) {
+            loadModal('/Users/EditModal/' + id, 'Editar Usuario');
+        }
+
+        function openDetailsModal(id) {
+            loadModal('/Users/DetailsModal/' + id, 'Detalles del Usuario');
+        }
+
+        function openDeleteModal(id) {
+            loadModal('/Users/DeleteModal/' + id, 'Eliminar Usuario');
+        }
+
+        // Función genérica para cargar modals
+        function loadModal(url, title) {
+            $.get(url)
+                .done(function(data) {
+                    $('#modalContent').html(data);
+                    var modal = new bootstrap.Modal(document.getElementById('userModal'));
+                    modal.show();
+                    setupAjaxAntiForgeryToken();
+                })
+                .fail(function(xhr, status, error) {
+                    alert('Error al cargar el modal: ' + error);
+                });
+        }
+
+        function reloadPage() {
+            location.reload();
+        }
+
+        function closeModal() {
+            var modalElement = document.getElementById('userModal');
+            var modal = bootstrap.Modal.getInstance(modalElement);
+            if (modal) {
+                modal.hide();
+            }
+
+            // Limpiar cualquier backdrop que pueda quedar
+            setTimeout(function() {
+                $('.modal-backdrop').remove();
+                $('body').removeClass('modal-open');
+                $('body').css('padding-right', '');
+            }, 300);
+        }
+                // Función especial para abrir Edit desde Details
+        function openEditFromDetails(id) {
+            // Cerrar el modal actual (Details) primero
+            var currentModal = bootstrap.Modal.getInstance(document.getElementById('userModal'));
+            if (currentModal) {
+                currentModal.hide();
+            }
+
+            // Esperar a que se cierre completamente y luego abrir Edit
+            setTimeout(function() {
+                loadModal('/Users/EditModal/' + id, 'Editar Usuario');
+            }, 300);
+        }
+    </script>
+}

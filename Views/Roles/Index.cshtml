@@ -1,0 +1,85 @@
+﻿@model IEnumerable<InventorySys.Models.TblRole>
+
+@{
+    ViewData["Title"] = "Index";
+}
+
+<!-- Breadcrumb fuera del card -->
+<div class="container-fluid mb-3">
+    <div class="row">
+        <div class="col-12">
+            <ol class="breadcrumb float-sm-end mb-0">
+                <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">Home</a></li>
+                <li class="breadcrumb-item active" aria-current="page">Roles</li>
+            </ol>
+        </div>
+    </div>
+</div>
+
+<!-- Content Section con estilo AdminLTE -->
+<section class="content">
+    <div class="container-fluid">
+        <!-- Card con outline primary -->
+        <div class="card card-outline card-primary">
+            <!-- Card Header con estilo AdminLTE -->
+            <div class="card-header">
+                <h1 class="card-title fw-bold">
+                    <i class="bi bi-shield-check me-2"></i>
+                    Roles
+                </h1>
+            </div>
+
+            <!-- Card Body -->
+            <div class="card-body">
+                <div style="margin-left: 15px;">
+                    <div class="row">
+                        <div class="col-12">
+                            <a asp-action="Create" class="btn btn-success">
+                                <i class="bi bi-plus-lg"></i> Nuevo
+                            </a>
+                        </div>
+                    </div>
+                    <br />
+
+                    <table class="table table-bordered table-striped dataTables1">
+                        <thead>
+                            <tr>
+                                <th>ID de Rol</th>
+                                <th>Nombre de Rol</th>
+                                <th>Estado de Rol</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var item in Model)
+                            {
+                                <tr>
+                                    <td>@item.RoleId</td>
+                                    <td>@item.RoleName</td>
+                                    <td class="text-center">
+                                        <span class="badge @(item.RoleActive ? "bg-success" : "bg-danger") fs-6">
+                                            <i class="bi @(item.RoleActive ? "bi-check-circle" : "bi-x-circle") me-1"></i>@(item.RoleActive ? "Activo" : "Inactivo")
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <div class="d-flex justify-content-center gap-1">
+                                            <a asp-action="Edit" asp-route-id="@item.RoleId" class="btn btn-sm btn-primary">
+                                                <i class="bi bi-pencil-square"></i> Editar
+                                            </a>
+                                            <a asp-action="Delete" asp-route-id="@item.RoleId" class="btn btn-sm btn-danger" onclick="return confirm('¿Deseas eliminar el rol?')">
+                                                <i class="bi bi-trash3"></i> Eliminar
+                                            </a>
+                                            <a asp-action="Details" asp-route-id="@item.RoleId" class="btn btn-sm btn-info">
+                                                <i class="bi bi-eye"></i> Ver
+                                            </a>
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>

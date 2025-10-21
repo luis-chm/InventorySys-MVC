@@ -1,0 +1,145 @@
+﻿@model InventorySys.Models.TblUser
+
+@{
+    ViewData["Title"] = "Delete";
+}
+
+<div class="modal-header bg-danger text-white">
+    <h5 class="modal-title">
+        <i class="bi bi-exclamation-triangle me-2"></i>¿Eliminar Usuario?
+    </h5>
+    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+</div>
+
+<div class="modal-body">
+    <div class="alert alert-warning" role="alert">
+        <i class="bi bi-info-circle me-2"></i>
+        <strong>Advertencia:</strong> Esta acción no se puede deshacer. El usuario será eliminado permanentemente del sistema.
+    </div>
+
+    <div class="row g-3">
+        <!-- User ID -->
+        <div class="col-md-6">
+            <div class="info-item">
+                <label class="form-label fw-semibold">
+                    <i class="bi bi-hash me-1"></i>User ID
+                </label>
+                <div class="info-value bg-light p-3 rounded border">
+                    @Html.DisplayFor(model => model.UserId)
+                </div>
+            </div>
+        </div>
+
+        <!-- Nombre de Usuario -->
+        <div class="col-md-6">
+            <div class="info-item">
+                <label class="form-label fw-semibold">
+                    <i class="bi bi-person me-1"></i>Nombre de Usuario
+                </label>
+                <div class="info-value bg-light p-3 rounded border">
+                    @Html.DisplayFor(model => model.UserName)
+                </div>
+            </div>
+        </div>
+
+        <!-- Email -->
+        <div class="col-md-6">
+            <div class="info-item">
+                <label class="form-label fw-semibold">
+                    <i class="bi bi-envelope me-1"></i>Email
+                </label>
+                <div class="info-value bg-light p-3 rounded border">
+                    @Html.DisplayFor(model => model.UserEmail)
+                </div>
+            </div>
+        </div>
+
+        <!-- Password (masked) -->
+        <div class="col-md-6">
+            <div class="info-item">
+                <label class="form-label fw-semibold">
+                    <i class="bi bi-lock me-1"></i>Contraseña
+                </label>
+                <div class="info-value bg-light p-3 rounded border">
+                    @(new string('*', 8))
+                </div>
+            </div>
+        </div>
+
+        <!-- Estado -->
+        <div class="col-md-6">
+            <div class="info-item">
+                <label class="form-label fw-semibold">
+                    <i class="bi bi-toggle-on me-1"></i>Estado
+                </label>
+                <div class="info-value bg-light p-3 rounded border">
+                    @if (Model.UserActive)
+                    {
+                        <span class="badge bg-success fs-6">
+                            <i class="bi bi-check-circle me-1"></i>Activo
+                        </span>
+                    }
+                    else
+                    {
+                        <span class="badge bg-danger fs-6">
+                            <i class="bi bi-x-circle me-1"></i>Inactivo
+                        </span>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <!-- Rol -->
+        <div class="col-md-6">
+            <div class="info-item">
+                <label class="form-label fw-semibold">
+                    <i class="bi bi-person-badge me-1"></i>Rol del Usuario
+                </label>
+                <div class="info-value bg-light p-3 rounded border">
+                    @Html.DisplayFor(model => model.Role.RoleName)
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal-footer d-flex justify-content-center">
+    <form id="deleteForm" class="d-inline">
+        @Html.AntiForgeryToken()
+        <input type="hidden" asp-for="UserId" />
+
+        <button type="submit" class="btn btn-danger me-2">
+            <i class="bi bi-trash me-1"></i>Sí, Eliminar Usuario
+        </button>
+        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
+            <i class="bi bi-arrow-left me-1"></i>Cancelar
+        </button>
+    </form>
+</div>
+
+<script>
+    $('#deleteForm').on('submit', function(e) {
+        e.preventDefault();
+
+        $.ajax({
+            url: '/Users/DeleteModalConfirmed',
+            type: 'POST',
+            data: {
+                id: $('[name="UserId"]').val(),
+                __RequestVerificationToken: $('[name="__RequestVerificationToken"]').val()
+            },
+            success: function(response) {
+                if (response.success) {
+                    closeModal();
+                    reloadPage();
+                    alert('Usuario eliminado exitosamente');
+                } else {
+                    alert(response.message || 'Error al eliminar el usuario');
+                }
+            },
+            error: function() {
+                alert('Error al eliminar el usuario');
+            }
+        });
+    });
+</script>
