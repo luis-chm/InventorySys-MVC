@@ -56,7 +56,7 @@ namespace InventorySys.Controllers
             return PartialView("Create", new TblUser());
         }
 
-        // POST: Users/CreateModal
+        //POST: Users/CreateModal
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> CreateModal([Bind("UserId,UserName,UserEmail,UserEncryptedPassword,RoleId,UserActive")] TblUser tblUser)
