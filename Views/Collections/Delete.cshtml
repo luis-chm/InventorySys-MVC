@@ -77,3 +77,43 @@
         </div>
     </div>
 </div>
+<div class="modal-footer d-flex justify-content-center">
+    <form id="deleteForm" class="d-inline">
+        @Html.AntiForgeryToken()
+        <input type="hidden" asp-for="CollectionId" />
+
+        <button type="submit" class="btn btn-danger me-2">
+            <i class="bi bi-trash me-1"></i>Sí, Eliminar Colección
+        </button>
+        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
+            <i class="bi bi-arrow-left me-1"></i>Cancelar
+        </button>
+    </form>
+</div>
+
+<script>
+    $('#deleteForm').on('submit', function(e) {
+        e.preventDefault();
+
+        $.ajax({
+            url: '/Collections/DeleteModal',
+            type: 'POST',
+            data: {
+                id: $('[name="CollectionId"]').val(),
+                __RequestVerificationToken: $('[name="__RequestVerificationToken"]').val()
+            },
+            success: function(response) {
+                if (response.success) {
+                    closeModal();
+                    reloadPage();
+                    alert('Colección eliminada exitosamente');
+                } else {
+                    alert(response.message || 'Error al eliminar la colección');
+                }
+            },
+            error: function() {
+                alert('Error al eliminar la colección');
+            }
+        });
+    });
+</script>
