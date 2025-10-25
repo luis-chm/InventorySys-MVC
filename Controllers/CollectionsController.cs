@@ -129,37 +129,49 @@ namespace InventorySys.Controllers
             return PartialView("Edit", tblCollection);
         }
 
-        // GET: Collections/Delete/5
-        public async Task<IActionResult> Delete(int? id)
+        // GET: Collections/DeleteModal/5
+        public async Task<IActionResult> DeleteModal(int? id)
         {
+            var userRole = GetUserRole();
+
+            if (!RolePermissionHelper.CanDelete(userRole, RolePermissionHelper.SystemModule.Collections))
+                return NotFound();
+
             if (id == null)
-            {
                 return NotFound();
-            }
 
-            var tblCollection = await _context.TblCollections
-                .FirstOrDefaultAsync(m => m.CollectionId == id);
+            var tblCollection = await _context.TblCollections.FirstOrDefaultAsync(m => m.CollectionId == id);
             if (tblCollection == null)
-            {
                 return NotFound();
-            }
 
-            return View(tblCollection);
+            return PartialView("Delete", tblCollection);
         }
 
-        // POST: Collections/Delete/5
-        [HttpPost, ActionName("Delete")]
+        // POST: Collections/DeleteModal/5
+        [HttpPost, ActionName("DeleteModal")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            var tblCollection = await _context.TblCollections.FindAsync(id);
-            if (tblCollection != null)
-            {
-                _context.TblCollections.Remove(tblCollection);
-            }
+            var userRole = GetUserRole();
 
-            await _context.SaveChangesAsync();
-            return RedirectToAction(nameof(Index));
+            if (!RolePermissionHelper.CanDelete(userRole, RolePermissionHelper.SystemModule.Collections))
+                return Json(new { success = false, message = "No tienes permiso para eliminar colecciones." });
+
+            try
+            {
+                var tblCollection = await _context.TblCollections.FindAsync(id);
+                if (tblCollection != null)
+                {
+                    _context.TblCollections.Remove(tblCollection);
+                }
+
+                await _context.SaveChangesAsync();
+                return Json(new { success = true, message = "Colección eliminada exitosamente." });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = ex.Message });
+            }
         }
 
         private bool TblCollectionExists(int id)
