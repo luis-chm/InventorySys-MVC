@@ -1,14 +1,18 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using InventorySys.Helpers;
+using InventorySys.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
-using InventorySys.Models;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Security.Claims;
+using System.Threading.Tasks;
 
 namespace InventorySys.Controllers
 {
+    [Authorize]
     public class CollectionsController : Controller
     {
         private readonly InventorySysContext _context;
@@ -18,50 +22,57 @@ namespace InventorySys.Controllers
             _context = context;
         }
 
+        private string GetUserRole()
+        {
+            return User.FindFirst(ClaimTypes.Role)?.Value ?? "";
+        }
+
         // GET: Collections
         public async Task<IActionResult> Index()
         {
+            var userRole = GetUserRole();
+
+            if (!RolePermissionHelper.CanAccessModule(userRole, RolePermissionHelper.SystemModule.Collections))
+                return RedirectToAction("AccessDenied", "Home");
+
             return View(await _context.TblCollections.ToListAsync());
         }
 
-        // GET: Collections/Details/5
-        public async Task<IActionResult> Details(int? id)
+        // GET: Collections/CreateModal
+        public IActionResult CreateModal()
         {
-            if (id == null)
-            {
-                return NotFound();
-            }
+            var userRole = GetUserRole();
 
-            var tblCollection = await _context.TblCollections
-                .FirstOrDefaultAsync(m => m.CollectionId == id);
-            if (tblCollection == null)
-            {
+            if (!RolePermissionHelper.CanCreate(userRole, RolePermissionHelper.SystemModule.Collections))
                 return NotFound();
-            }
 
-            return View(tblCollection);
+            return PartialView("Create", new TblCollection());
         }
 
-        // GET: Collections/Create
-        public IActionResult Create()
-        {
-            return View();
-        }
-
-        // POST: Collections/Create
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
+        // POST: Collections/CreateModal
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("CollectionId,CollectionName,CollectionEffect,CollectionActive")] TblCollection tblCollection)
+        public async Task<IActionResult> CreateModal([Bind("CollectionId,CollectionName,CollectionEffect,CollectionActive")] TblCollection tblCollection)
         {
+            var userRole = GetUserRole();
+
+            if (!RolePermissionHelper.CanCreate(userRole, RolePermissionHelper.SystemModule.Collections))
+                return Json(new { success = false, message = "No tienes permiso para crear colecciones." });
+
             if (ModelState.IsValid)
             {
-                _context.Add(tblCollection);
-                await _context.SaveChangesAsync();
-                return RedirectToAction(nameof(Index));
+                try
+                {
+                    _context.Add(tblCollection);
+                    await _context.SaveChangesAsync();
+                    return Json(new { success = true, message = "Colección creada exitosamente." });
+                }
+                catch (Exception ex)
+                {
+                    return Json(new { success = false, message = ex.Message });
+                }
             }
-            return View(tblCollection);
+            return PartialView("Create", tblCollection);
         }
 
         // GET: Collections/Edit/5
