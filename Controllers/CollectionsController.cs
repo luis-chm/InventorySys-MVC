@@ -75,33 +75,36 @@ namespace InventorySys.Controllers
             return PartialView("Create", tblCollection);
         }
 
-        // GET: Collections/Edit/5
-        public async Task<IActionResult> Edit(int? id)
+        // GET: Collections/EditModal/5
+        public async Task<IActionResult> EditModal(int? id)
         {
-            if (id == null)
-            {
+            var userRole = GetUserRole();
+
+            if (!RolePermissionHelper.CanEdit(userRole, RolePermissionHelper.SystemModule.Collections))
                 return NotFound();
-            }
+
+            if (id == null)
+                return NotFound();
 
             var tblCollection = await _context.TblCollections.FindAsync(id);
             if (tblCollection == null)
-            {
                 return NotFound();
-            }
-            return View(tblCollection);
+
+            return PartialView("Edit", tblCollection);
         }
 
-        // POST: Collections/Edit/5
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
+        // POST: Collections/EditModal/5
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("CollectionId,CollectionName,CollectionEffect,CollectionActive")] TblCollection tblCollection)
+        public async Task<IActionResult> EditModal(int id, [Bind("CollectionId,CollectionName,CollectionEffect,CollectionActive")] TblCollection tblCollection)
         {
+            var userRole = GetUserRole();
+
+            if (!RolePermissionHelper.CanEdit(userRole, RolePermissionHelper.SystemModule.Collections))
+                return Json(new { success = false, message = "No tienes permiso para editar colecciones." });
+
             if (id != tblCollection.CollectionId)
-            {
                 return NotFound();
-            }
 
             if (ModelState.IsValid)
             {
@@ -109,21 +112,21 @@ namespace InventorySys.Controllers
                 {
                     _context.Update(tblCollection);
                     await _context.SaveChangesAsync();
+                    return Json(new { success = true, message = "Colección actualizada exitosamente." });
                 }
                 catch (DbUpdateConcurrencyException)
                 {
                     if (!TblCollectionExists(tblCollection.CollectionId))
-                    {
                         return NotFound();
-                    }
                     else
-                    {
                         throw;
-                    }
                 }
-                return RedirectToAction(nameof(Index));
+                catch (Exception ex)
+                {
+                    return Json(new { success = false, message = ex.Message });
+                }
             }
-            return View(tblCollection);
+            return PartialView("Edit", tblCollection);
         }
 
         // GET: Collections/Delete/5
