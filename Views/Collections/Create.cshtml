@@ -1,43 +1,97 @@
 ﻿@model InventorySys.Models.TblCollection
 
 @{
+
     ViewData["Title"] = "Create";
+
 }
+<div class="modal-header bg-success text-white">
+    <h5 class="modal-title">
+        <i class="bi bi-collection me-2"></i>Crear Nueva Colección
+    </h5>
+    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+</div>
 
-<h1>Create</h1>
+<form id="createCollectionForm">
 
-<h4>TblCollection</h4>
-<hr />
-<div class="row">
-    <div class="col-md-4">
-        <form asp-action="Create">
-            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-            <div class="form-group">
-                <label asp-for="CollectionName" class="control-label"></label>
-                <input asp-for="CollectionName" class="form-control" />
-                <span asp-validation-for="CollectionName" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="CollectionEffect" class="control-label"></label>
-                <input asp-for="CollectionEffect" class="form-control" />
-                <span asp-validation-for="CollectionEffect" class="text-danger"></span>
-            </div>
-            <div class="form-group form-check">
-                <label class="form-check-label">
-                    <input class="form-check-input" asp-for="CollectionActive" /> @Html.DisplayNameFor(model => model.CollectionActive)
+    @Html.AntiForgeryToken()
+
+    <div class="modal-body">
+        <div asp-validation-summary="ModelOnly" class="alert alert-danger d-none"></div>
+
+        <div class="row g-3">
+            <!-- Nombre de Colección -->
+            <div class="col-12">
+                <label asp-for="CollectionName" class="form-label fw-semibold">
+                    <i class="bi bi-collection me-1"></i>Nombre de Colección <span class="text-danger">*</span>
                 </label>
+                <input asp-for="CollectionName" class="form-control" placeholder="Ingrese el nombre de la colección" required />
+                <span asp-validation-for="CollectionName" class="text-danger small"></span>
             </div>
-            <div class="form-group">
-                <input type="submit" value="Create" class="btn btn-primary" />
+
+            <!-- Efecto de Colección -->
+            <div class="col-12">
+                <label asp-for="CollectionEffect" class="form-label fw-semibold">
+                    <i class="bi bi-stars me-1"></i>Efecto de Colección <span class="text-danger">*</span>
+                </label>
+                <input asp-for="CollectionEffect" class="form-control" placeholder="Ingrese el efecto de la colección" required />
+                <span asp-validation-for="CollectionEffect" class="text-danger small"></span>
             </div>
-        </form>
+
+            <!-- Estado de Colección -->
+            <div class="col-12">
+                <label class="form-label fw-semibold">
+                    <i class="bi bi-toggle-on me-1"></i>Estado de Colección <span class="text-danger">*</span>
+                </label>
+                <div class="mt-2">
+                    <div class="form-check form-check-inline">
+                        <input asp-for="CollectionActive" type="radio" value="true" class="form-check-input" id="createActiveTrue" checked required />
+                        <label class="form-check-label text-success fw-semibold" for="createActiveTrue">
+                            <i class="bi bi-check-circle me-1"></i>Activo
+                        </label>
+                    </div>
+                    <div class="form-check form-check-inline">
+                        <input asp-for="CollectionActive" type="radio" value="false" class="form-check-input" id="createActiveFalse" required />
+                        <label class="form-check-label text-danger fw-semibold" for="createActiveFalse">
+                            <i class="bi bi-x-circle me-1"></i>Inactivo
+                        </label>
+                    </div>
+                </div>
+                <span asp-validation-for="CollectionActive" class="text-danger small"></span>
+            </div>
+        </div>
     </div>
-</div>
 
-<div>
-    <a asp-action="Index">Back to List</a>
-</div>
+    <div class="modal-footer">
+        <button type="submit" class="btn btn-success">
+            <i class="bi bi-check-circle me-1"></i>Crear Colección
+        </button>
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+            <i class="bi bi-x-circle me-1"></i>Cancelar
+        </button>
+    </div>
+</form>
 
-@section Scripts {
-    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
-}
+<script>
+    $('#createCollectionForm').on('submit', function(e) {
+        e.preventDefault();
+
+        $.ajax({
+            url: '/Collections/CreateModal',
+            type: 'POST',
+            data: $(this).serialize(),
+            success: function(response) {
+                if (response.success) {
+                    closeModal();
+                    reloadPage();
+                    alert(response.message);
+                } else {
+                    $('#materialModalContent').html(response); // recargar la vista parcial con errores
+                }
+            },
+            error: function() {
+                alert('Error al crear la colección');
+            }
+        });
+    });
+</script>
