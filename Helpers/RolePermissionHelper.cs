@@ -1,5 +1,5 @@
 ﻿namespace InventorySys.Helpers;
-
+//Se añade helpers para gestionar los roles y permisos de usuario en el sistema de inventario.
 public static class RolePermissionHelper
 {
     // Enum para módulos
