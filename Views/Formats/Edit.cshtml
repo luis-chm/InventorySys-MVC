@@ -4,41 +4,94 @@
     ViewData["Title"] = "Edit";
 }
 
-<h1>Edit</h1>
+<div class="modal-header bg-primary text-white">
+    <h5 class="modal-title">
+        <i class="bi bi-pencil-square me-2"></i>Editar Formato
+    </h5>
+    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+</div>
 
-<h4>TblFormat</h4>
-<hr />
-<div class="row">
-    <div class="col-md-4">
-        <form asp-action="Edit">
-            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-            <input type="hidden" asp-for="FormatId" />
-            <div class="form-group">
-                <label asp-for="FormatName" class="control-label"></label>
-                <input asp-for="FormatName" class="form-control" />
-                <span asp-validation-for="FormatName" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="FormatSizeCm" class="control-label"></label>
-                <input asp-for="FormatSizeCm" class="form-control" />
-                <span asp-validation-for="FormatSizeCm" class="text-danger"></span>
-            </div>
-            <div class="form-group form-check">
-                <label class="form-check-label">
-                    <input class="form-check-input" asp-for="FormatActive" /> @Html.DisplayNameFor(model => model.FormatActive)
+<form id="editForm">
+    @Html.AntiForgeryToken()
+    <input type="hidden" asp-for="FormatId" />
+
+    <div class="modal-body">
+        <div asp-validation-summary="ModelOnly" class="alert alert-danger d-none"></div>
+
+        <div class="row g-3">
+            <!-- Nombre del Formato -->
+            <div class="col-12">
+                <label asp-for="FormatName" class="form-label fw-semibold">
+                    <i class="bi bi-aspect-ratio me-1"></i>Nombre del Formato <span class="text-danger">*</span>
                 </label>
+                <input asp-for="FormatName" class="form-control" placeholder="Ingrese el nombre del formato" required />
+                <span asp-validation-for="FormatName" class="text-danger small"></span>
             </div>
-            <div class="form-group">
-                <input type="submit" value="Save" class="btn btn-primary" />
+
+            <!-- Tamaño en cm -->
+            <div class="col-12">
+                <label asp-for="FormatSizeCm" class="form-label fw-semibold">
+                    <i class="bi bi-arrows-fullscreen me-1"></i>Tamaño (cm) <span class="text-danger">*</span>
+                </label>
+                <input asp-for="FormatSizeCm" class="form-control" placeholder="Ejemplo: 60x60" required />
+                <span asp-validation-for="FormatSizeCm" class="text-danger small"></span>
             </div>
-        </form>
+
+            <!-- Estado del Formato -->
+            <div class="col-12">
+                <label class="form-label fw-semibold">
+                    <i class="bi bi-toggle-on me-1"></i>Estado del Formato <span class="text-danger">*</span>
+                </label>
+                <div class="mt-2">
+                    <div class="form-check form-check-inline">
+                        <input asp-for="FormatActive" type="radio" value="true" class="form-check-input" id="editActiveTrue" required />
+                        <label class="form-check-label text-success fw-semibold" for="editActiveTrue">
+                            <i class="bi bi-check-circle me-1"></i>Activo
+                        </label>
+                    </div>
+                    <div class="form-check form-check-inline">
+                        <input asp-for="FormatActive" type="radio" value="false" class="form-check-input" id="editActiveFalse" required />
+                        <label class="form-check-label text-danger fw-semibold" for="editActiveFalse">
+                            <i class="bi bi-x-circle me-1"></i>Inactivo
+                        </label>
+                    </div>
+                </div>
+                <span asp-validation-for="FormatActive" class="text-danger small"></span>
+            </div>
+        </div>
     </div>
-</div>
 
-<div>
-    <a asp-action="Index">Back to List</a>
-</div>
+    <div class="modal-footer">
+        <button type="submit" class="btn btn-primary">
+            <i class="bi bi-check-circle me-1"></i>Actualizar Formato
+        </button>
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+            <i class="bi bi-x-circle me-1"></i>Cancelar
+        </button>
+    </div>
+</form>
 
-@section Scripts {
-    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
-}
+<script>
+    $('#editForm').on('submit', function(e) {
+        e.preventDefault();
+
+        $.ajax({
+            url: '/Formats/EditModal/' + $('[name="FormatId"]').val(),
+            type: 'POST',
+            data: $(this).serialize(),
+            success: function(response) {
+                if (response.success) {
+                    closeModal();
+                    reloadPage();
+                    alert(response.message);
+                } else {
+                    // Si la validación falla, se recarga el modal con los mensajes de error
+                    $('#modalContent').html(response);
+                }
+            },
+            error: function() {
+                alert('Error al actualizar el formato');
+            }
+        });
+    });
+</script>
