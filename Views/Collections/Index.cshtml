@@ -2,46 +2,110 @@
 
 @{
     ViewData["Title"] = "Index";
+    var userRole = User.FindFirst(System.Security.Claims.ClaimTypes.Role)?.Value;
 }
 
-<h1>Index</h1>
+<!-- Breadcrumb fuera del card -->
+<div class="app-content-header">
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-sm-6">
+                <h3 class="mb-0">
+                    <i class="bi bi-collection-fill me-2"></i>Colecciones
+                </h3>
+            </div>
+            <div class="col-sm-6">
+                <ol class="breadcrumb float-sm-end">
+                    <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">Inicio</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">Colecciones</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</div>
 
-<p>
-    <a asp-action="Create">Create New</a>
-</p>
-<table class="table">
-    <thead>
-        <tr>
-            <th>
-                @Html.DisplayNameFor(model => model.CollectionName)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.CollectionEffect)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.CollectionActive)
-            </th>
-            <th></th>
-        </tr>
-    </thead>
-    <tbody>
-@foreach (var item in Model) {
-        <tr>
-            <td>
-                @Html.DisplayFor(modelItem => item.CollectionName)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.CollectionEffect)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.CollectionActive)
-            </td>
-            <td>
-                <a asp-action="Edit" asp-route-id="@item.CollectionId">Edit</a> |
-                <a asp-action="Details" asp-route-id="@item.CollectionId">Details</a> |
-                <a asp-action="Delete" asp-route-id="@item.CollectionId">Delete</a>
-            </td>
-        </tr>
-}
-    </tbody>
-</table>
+<!-- Content Section -->
+<section class="content">
+    <div class="container-fluid">
+        <!-- Card con sombra -->
+        <div class="card shadow-sm">
+            <div class="card-header bg-white py-3 border-bottom">
+                <div class="row align-items-center">
+                    <div class="col-12">
+                        @if (RolePermissionHelper.CanCreate(userRole, RolePermissionHelper.SystemModule.Collections))
+                        {
+                            <button type="button" class="btn btn-success" onclick="openCreateModal()">
+                                <i class="bi bi-plus-lg"></i> Crear Nuevo
+                            </button>
+                        }
+                    </div>
+                </div>
+            </div>
+
+            <!-- Card Body -->
+            <div class="card-body">
+                <table class="table table-bordered table-striped dataTables1">
+                    <thead>
+                        <tr>
+                            <th>ID de Colección</th>
+                            <th>Nombre de Colección</th>
+                            <th>Efecto de Colección</th>
+                            <th>Estado</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in Model)
+                        {
+                            <tr>
+                                <td>@item.CollectionId</td>
+                                <td>@item.CollectionName</td>
+                                <td>@item.CollectionEffect</td>
+                                <td class="text-center">
+                                    <span class="badge @(item.CollectionActive ? "bg-success" : "bg-danger") fs-6">
+                                        <i class="bi @(item.CollectionActive ? "bi-check-circle" : "bi-x-circle") me-1"></i>
+                                        @(item.CollectionActive ? "Activo" : "Inactivo")
+                                    </span>
+                                </td>
+                                <td>
+                                    <div class="d-flex justify-content-center gap-1">
+                                        @if (RolePermissionHelper.CanEdit(userRole, RolePermissionHelper.SystemModule.Collections))
+                                        {
+                                            <button class="btn btn-sm btn-primary" onclick="openEditModal(@item.CollectionId)">
+                                                <i class="bi bi-pencil-square"></i> Editar
+                                            </button>
+                                        }
+
+                                        @if (RolePermissionHelper.CanDelete(userRole, RolePermissionHelper.SystemModule.Collections))
+                                        {
+                                            <button class="btn btn-sm btn-danger" onclick="openDeleteModal(@item.CollectionId)">
+                                                <i class="bi bi-trash3"></i> Eliminar
+                                            </button>
+                                        }
+
+                                        @if (!RolePermissionHelper.CanEdit(userRole, RolePermissionHelper.SystemModule.Collections) &&
+                                                                            !RolePermissionHelper.CanDelete(userRole, RolePermissionHelper.SystemModule.Collections))
+                                        {
+                                            <span class="text-muted">
+                                                <i class="bi bi-lock-fill me-1"></i> Sin acceso
+                                            </span>
+                                        }
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Modal Container -->
+<div class="modal fade" id="collectionModal" tabindex="-1" aria-labelledby="collectionModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content" id="modalContent">
+            <!-- El contenido se cargará aquí dinámicamente -->
+        </div>
+    </div>
+</div>
