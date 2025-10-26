@@ -1,14 +1,18 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using InventorySys.Helpers;
+using InventorySys.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
-using InventorySys.Models;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Security.Claims;
+using System.Threading.Tasks;
 
 namespace InventorySys.Controllers
 {
+    [Authorize]
     public class FormatsController : Controller
     {
         private readonly InventorySysContext _context;
@@ -18,79 +22,89 @@ namespace InventorySys.Controllers
             _context = context;
         }
 
+        private string GetUserRole()
+        {
+            return User.FindFirst(ClaimTypes.Role)?.Value ?? "";
+        }
+
         // GET: Formats
         public async Task<IActionResult> Index()
         {
+            var userRole = GetUserRole();
+
+            if (!RolePermissionHelper.CanAccessModule(userRole, RolePermissionHelper.SystemModule.Formats))
+                return RedirectToAction("AccessDenied", "Home");
+
             return View(await _context.TblFormats.ToListAsync());
         }
 
-        // GET: Formats/Details/5
-        public async Task<IActionResult> Details(int? id)
+        // GET: Formats/CreateModal
+        public IActionResult CreateModal()
         {
-            if (id == null)
-            {
-                return NotFound();
-            }
+            var userRole = GetUserRole();
 
-            var tblFormat = await _context.TblFormats
-                .FirstOrDefaultAsync(m => m.FormatId == id);
-            if (tblFormat == null)
-            {
+            if (!RolePermissionHelper.CanCreate(userRole, RolePermissionHelper.SystemModule.Formats))
                 return NotFound();
-            }
 
-            return View(tblFormat);
+            return PartialView("Create", new TblFormat());
         }
 
-        // GET: Formats/Create
-        public IActionResult Create()
-        {
-            return View();
-        }
-
-        // POST: Formats/Create
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
+        // POST: Formats/CreateModal
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("FormatId,FormatName,FormatSizeCm,FormatActive")] TblFormat tblFormat)
+        public async Task<IActionResult> CreateModal([Bind("FormatId,FormatName,FormatSizeCm,FormatActive")] TblFormat tblFormat)
         {
+            var userRole = GetUserRole();
+
+            if (!RolePermissionHelper.CanCreate(userRole, RolePermissionHelper.SystemModule.Formats))
+                return Json(new { success = false, message = "No tienes permiso para crear formatos." });
+
             if (ModelState.IsValid)
             {
-                _context.Add(tblFormat);
-                await _context.SaveChangesAsync();
-                return RedirectToAction(nameof(Index));
+                try
+                {
+                    _context.Add(tblFormat);
+                    await _context.SaveChangesAsync();
+                    return Json(new { success = true, message = "Formato creado exitosamente." });
+                }
+                catch (Exception ex)
+                {
+                    return Json(new { success = false, message = ex.Message });
+                }
             }
-            return View(tblFormat);
+            return PartialView("Create", tblFormat);
         }
 
-        // GET: Formats/Edit/5
-        public async Task<IActionResult> Edit(int? id)
+        // GET: Formats/EditModal/5
+        public async Task<IActionResult> EditModal(int? id)
         {
-            if (id == null)
-            {
+            var userRole = GetUserRole();
+
+            if (!RolePermissionHelper.CanEdit(userRole, RolePermissionHelper.SystemModule.Formats))
                 return NotFound();
-            }
+
+            if (id == null)
+                return NotFound();
 
             var tblFormat = await _context.TblFormats.FindAsync(id);
             if (tblFormat == null)
-            {
                 return NotFound();
-            }
-            return View(tblFormat);
+
+            return PartialView("Edit", tblFormat);
         }
 
-        // POST: Formats/Edit/5
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
+        // POST: Formats/EditModal/5
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("FormatId,FormatName,FormatSizeCm,FormatActive")] TblFormat tblFormat)
+        public async Task<IActionResult> EditModal(int id, [Bind("FormatId,FormatName,FormatSizeCm,FormatActive")] TblFormat tblFormat)
         {
+            var userRole = GetUserRole();
+
+            if (!RolePermissionHelper.CanEdit(userRole, RolePermissionHelper.SystemModule.Formats))
+                return Json(new { success = false, message = "No tienes permiso para editar formatos." });
+
             if (id != tblFormat.FormatId)
-            {
                 return NotFound();
-            }
 
             if (ModelState.IsValid)
             {
@@ -98,54 +112,66 @@ namespace InventorySys.Controllers
                 {
                     _context.Update(tblFormat);
                     await _context.SaveChangesAsync();
+                    return Json(new { success = true, message = "Formato actualizado exitosamente." });
                 }
                 catch (DbUpdateConcurrencyException)
                 {
                     if (!TblFormatExists(tblFormat.FormatId))
-                    {
                         return NotFound();
-                    }
                     else
-                    {
                         throw;
-                    }
                 }
-                return RedirectToAction(nameof(Index));
+                catch (Exception ex)
+                {
+                    return Json(new { success = false, message = ex.Message });
+                }
             }
-            return View(tblFormat);
+            return PartialView("Edit", tblFormat);
         }
 
-        // GET: Formats/Delete/5
-        public async Task<IActionResult> Delete(int? id)
+        // GET: Formats/DeleteModal/5
+        public async Task<IActionResult> DeleteModal(int? id)
         {
+            var userRole = GetUserRole();
+
+            if (!RolePermissionHelper.CanDelete(userRole, RolePermissionHelper.SystemModule.Formats))
+                return NotFound();
+
             if (id == null)
-            {
                 return NotFound();
-            }
 
-            var tblFormat = await _context.TblFormats
-                .FirstOrDefaultAsync(m => m.FormatId == id);
+            var tblFormat = await _context.TblFormats.FirstOrDefaultAsync(m => m.FormatId == id);
             if (tblFormat == null)
-            {
                 return NotFound();
-            }
 
-            return View(tblFormat);
+            return PartialView("Delete", tblFormat);
         }
 
-        // POST: Formats/Delete/5
-        [HttpPost, ActionName("Delete")]
+        // POST: Formats/DeleteModal/5
+        [HttpPost, ActionName("DeleteModal")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            var tblFormat = await _context.TblFormats.FindAsync(id);
-            if (tblFormat != null)
-            {
-                _context.TblFormats.Remove(tblFormat);
-            }
+            var userRole = GetUserRole();
 
-            await _context.SaveChangesAsync();
-            return RedirectToAction(nameof(Index));
+            if (!RolePermissionHelper.CanDelete(userRole, RolePermissionHelper.SystemModule.Formats))
+                return Json(new { success = false, message = "No tienes permiso para eliminar formatos." });
+
+            try
+            {
+                var tblFormat = await _context.TblFormats.FindAsync(id);
+                if (tblFormat != null)
+                {
+                    _context.TblFormats.Remove(tblFormat);
+                }
+
+                await _context.SaveChangesAsync();
+                return Json(new { success = true, message = "Formato eliminado exitosamente." });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = ex.Message });
+            }
         }
 
         private bool TblFormatExists(int id)
