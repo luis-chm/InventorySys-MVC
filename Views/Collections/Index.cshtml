@@ -109,3 +109,70 @@
         </div>
     </div>
 </div>
+@section Scripts {
+    <script>
+        function setupAjaxAntiForgeryToken() {
+            var token = $('input[name="__RequestVerificationToken"]').val();
+
+            if (token) {
+                $.ajaxSetup({
+                    beforeSend: function(xhr, settings) {
+                        if (settings.type === 'POST' && !this.crossDomain) {
+                            xhr.setRequestHeader("RequestVerificationToken", token);
+                        }
+                    }
+                });
+            }
+        }
+
+        $(document).ready(function() {
+            setupAjaxAntiForgeryToken();
+        });
+
+        function openCreateModal() {
+            loadModal('/Collections/CreateModal', 'Crear Colección');
+        }
+
+        function openEditModal(id) {
+            loadModal('/Collections/EditModal/' + id, 'Editar Colección');
+        }
+
+        function openDeleteModal(id) {
+            loadModal('/Collections/DeleteModal/' + id, 'Eliminar Colección');
+        }
+
+        function loadModal(url, title) {
+            $.get(url)
+                .done(function(data) {
+                    $('#modalContent').html(data);
+                    var modal = new bootstrap.Modal(document.getElementById('collectionModal'));
+                    modal.show();
+                    setupAjaxAntiForgeryToken();
+                })
+                .fail(function(xhr, status, error) {
+                    if (xhr.status === 404) {
+                        return;
+                    }
+                    alert('Error al cargar el modal: ' + error);
+                });
+        }
+
+        function reloadPage() {
+            location.reload();
+        }
+
+        function closeModal() {
+            var modalElement = document.getElementById('collectionModal');
+            var modal = bootstrap.Modal.getInstance(modalElement);
+            if (modal) {
+                modal.hide();
+            }
+
+            setTimeout(function() {
+                $('.modal-backdrop').remove();
+                $('body').removeClass('modal-open');
+                $('body').css('padding-right', '');
+            }, 300);
+        }
+    </script>
+}
