@@ -70,3 +70,26 @@
         </button>
     </div>
 </form>
+<script>
+    $('#editForm').on('submit', function(e) {
+        e.preventDefault();
+
+        $.ajax({
+            url: '/Collections/EditModal/' + $('[name="CollectionId"]').val(),
+            type: 'POST',
+            data: $(this).serialize(),
+            success: function(response) {
+                if (response.success) {
+                    closeModal();
+                    reloadPage();
+                    alert(response.message);
+                } else {
+                    $('#modalContent').html(response);
+                }
+            },
+            error: function() {
+                alert('Error al actualizar la colección');
+            }
+        });
+    });
+</script>
