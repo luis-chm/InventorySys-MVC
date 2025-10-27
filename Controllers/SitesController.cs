@@ -6,9 +6,13 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using InventorySys.Models;
+using InventorySys.Helpers;
+using Microsoft.AspNetCore.Authorization;
+using System.Security.Claims;
 
 namespace InventorySys.Controllers
 {
+    [Authorize]
     public class SitesController : Controller
     {
         private readonly InventorySysContext _context;
@@ -18,79 +22,89 @@ namespace InventorySys.Controllers
             _context = context;
         }
 
+        private string GetUserRole()
+        {
+            return User.FindFirst(ClaimTypes.Role)?.Value ?? "";
+        }
+
         // GET: Sites
         public async Task<IActionResult> Index()
         {
+            var userRole = GetUserRole();
+
+            if (!RolePermissionHelper.CanAccessModule(userRole, RolePermissionHelper.SystemModule.Sites))
+                return RedirectToAction("AccessDenied", "Home");
+
             return View(await _context.TblSites.ToListAsync());
         }
 
-        // GET: Sites/Details/5
-        public async Task<IActionResult> Details(int? id)
+        // GET: Sites/CreateModal
+        public IActionResult CreateModal()
         {
-            if (id == null)
-            {
-                return NotFound();
-            }
+            var userRole = GetUserRole();
 
-            var tblSite = await _context.TblSites
-                .FirstOrDefaultAsync(m => m.SiteId == id);
-            if (tblSite == null)
-            {
+            if (!RolePermissionHelper.CanCreate(userRole, RolePermissionHelper.SystemModule.Sites))
                 return NotFound();
-            }
 
-            return View(tblSite);
+            return PartialView("Create", new TblSite());
         }
 
-        // GET: Sites/Create
-        public IActionResult Create()
-        {
-            return View();
-        }
-
-        // 
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
+        // POST: Sites/CreateModal
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("SiteId,SiteName,SiteLocation,SiteActive")] TblSite tblSite)
+        public async Task<IActionResult> CreateModal([Bind("SiteId,SiteName,SiteLocation,SiteActive")] TblSite tblSite)
         {
+            var userRole = GetUserRole();
+
+            if (!RolePermissionHelper.CanCreate(userRole, RolePermissionHelper.SystemModule.Sites))
+                return Json(new { success = false, message = "No tienes permiso para crear sitios." });
+
             if (ModelState.IsValid)
             {
-                _context.Add(tblSite);
-                await _context.SaveChangesAsync();
-                return RedirectToAction(nameof(Index));
+                try
+                {
+                    _context.Add(tblSite);
+                    await _context.SaveChangesAsync();
+                    return Json(new { success = true, message = "Sitio creado exitosamente." });
+                }
+                catch (Exception ex)
+                {
+                    return Json(new { success = false, message = ex.Message });
+                }
             }
-            return View(tblSite);
+            return PartialView("Create", tblSite);
         }
 
-        // GET: Sites/Edit/5
-        public async Task<IActionResult> Edit(int? id)
+        // GET: Sites/EditModal/5
+        public async Task<IActionResult> EditModal(int? id)
         {
-            if (id == null)
-            {
+            var userRole = GetUserRole();
+
+            if (!RolePermissionHelper.CanEdit(userRole, RolePermissionHelper.SystemModule.Sites))
                 return NotFound();
-            }
+
+            if (id == null)
+                return NotFound();
 
             var tblSite = await _context.TblSites.FindAsync(id);
             if (tblSite == null)
-            {
                 return NotFound();
-            }
-            return View(tblSite);
+
+            return PartialView("Edit", tblSite);
         }
 
-        // POST: Sites/Edit/5
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
+        // POST: Sites/EditModal/5
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("SiteId,SiteName,SiteLocation,SiteActive")] TblSite tblSite)
+        public async Task<IActionResult> EditModal(int id, [Bind("SiteId,SiteName,SiteLocation,SiteActive")] TblSite tblSite)
         {
+            var userRole = GetUserRole();
+
+            if (!RolePermissionHelper.CanEdit(userRole, RolePermissionHelper.SystemModule.Sites))
+                return Json(new { success = false, message = "No tienes permiso para editar sitios." });
+
             if (id != tblSite.SiteId)
-            {
                 return NotFound();
-            }
 
             if (ModelState.IsValid)
             {
@@ -98,54 +112,66 @@ namespace InventorySys.Controllers
                 {
                     _context.Update(tblSite);
                     await _context.SaveChangesAsync();
+                    return Json(new { success = true, message = "Sitio actualizado exitosamente." });
                 }
                 catch (DbUpdateConcurrencyException)
                 {
                     if (!TblSiteExists(tblSite.SiteId))
-                    {
                         return NotFound();
-                    }
                     else
-                    {
                         throw;
-                    }
                 }
-                return RedirectToAction(nameof(Index));
+                catch (Exception ex)
+                {
+                    return Json(new { success = false, message = ex.Message });
+                }
             }
-            return View(tblSite);
+            return PartialView("Edit", tblSite);
         }
 
-        // GET: Sites/Delete/5
-        public async Task<IActionResult> Delete(int? id)
+        // GET: Sites/DeleteModal/5
+        public async Task<IActionResult> DeleteModal(int? id)
         {
+            var userRole = GetUserRole();
+
+            if (!RolePermissionHelper.CanDelete(userRole, RolePermissionHelper.SystemModule.Sites))
+                return NotFound();
+
             if (id == null)
-            {
                 return NotFound();
-            }
 
-            var tblSite = await _context.TblSites
-                .FirstOrDefaultAsync(m => m.SiteId == id);
+            var tblSite = await _context.TblSites.FirstOrDefaultAsync(m => m.SiteId == id);
             if (tblSite == null)
-            {
                 return NotFound();
-            }
 
-            return View(tblSite);
+            return PartialView("Delete", tblSite);
         }
 
-        // POST: Sites/Delete/5
-        [HttpPost, ActionName("Delete")]
+        // POST: Sites/DeleteModal/5
+        [HttpPost, ActionName("DeleteModal")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            var tblSite = await _context.TblSites.FindAsync(id);
-            if (tblSite != null)
-            {
-                _context.TblSites.Remove(tblSite);
-            }
+            var userRole = GetUserRole();
 
-            await _context.SaveChangesAsync();
-            return RedirectToAction(nameof(Index));
+            if (!RolePermissionHelper.CanDelete(userRole, RolePermissionHelper.SystemModule.Sites))
+                return Json(new { success = false, message = "No tienes permiso para eliminar sitios." });
+
+            try
+            {
+                var tblSite = await _context.TblSites.FindAsync(id);
+                if (tblSite != null)
+                {
+                    _context.TblSites.Remove(tblSite);
+                }
+
+                await _context.SaveChangesAsync();
+                return Json(new { success = true, message = "Sitio eliminado exitosamente." });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = ex.Message });
+            }
         }
 
         private bool TblSiteExists(int id)
