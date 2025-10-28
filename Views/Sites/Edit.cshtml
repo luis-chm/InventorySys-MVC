@@ -3,42 +3,93 @@
 @{
     ViewData["Title"] = "Edit";
 }
+<div class="modal-header bg-primary text-white">
+    <h5 class="modal-title">
+        <i class="bi bi-pencil-square me-2"></i>Editar Sitio
+    </h5>
+    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+</div>
 
-<h1>Edit</h1>
+<form id="editForm">
+    @Html.AntiForgeryToken()
+    <input type="hidden" asp-for="SiteId" />
 
-<h4>TblSite</h4>
-<hr />
-<div class="row">
-    <div class="col-md-4">
-        <form asp-action="Edit">
-            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-            <input type="hidden" asp-for="SiteId" />
-            <div class="form-group">
-                <label asp-for="SiteName" class="control-label"></label>
-                <input asp-for="SiteName" class="form-control" />
-                <span asp-validation-for="SiteName" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="SiteLocation" class="control-label"></label>
-                <input asp-for="SiteLocation" class="form-control" />
-                <span asp-validation-for="SiteLocation" class="text-danger"></span>
-            </div>
-            <div class="form-group form-check">
-                <label class="form-check-label">
-                    <input class="form-check-input" asp-for="SiteActive" /> @Html.DisplayNameFor(model => model.SiteActive)
+    <div class="modal-body">
+        <div asp-validation-summary="ModelOnly" class="alert alert-danger d-none"></div>
+
+        <div class="row g-3">
+            <div class="col-12">
+                <label asp-for="SiteName" class="form-label fw-semibold">
+                    <i class="bi bi-geo-alt me-1"></i>Nombre del Sitio <span class="text-danger">*</span>
                 </label>
+                <input asp-for="SiteName" class="form-control" placeholder="Ej: Planta Central" required />
+                <span asp-validation-for="SiteName" class="text-danger small"></span>
             </div>
-            <div class="form-group">
-                <input type="submit" value="Save" class="btn btn-primary" />
+
+            <div class="col-12">
+                <label asp-for="SiteLocation" class="form-label fw-semibold">
+                    <i class="bi bi-geo me-1"></i>Ubicación <span class="text-danger">*</span>
+                </label>
+                <input asp-for="SiteLocation" class="form-control" placeholder="Ej: San José, Costa Rica" required />
+                <span asp-validation-for="SiteLocation" class="text-danger small"></span>
             </div>
-        </form>
+
+            <div class="col-12">
+                <label class="form-label fw-semibold">
+                    <i class="bi bi-toggle-on me-1"></i>Estado <span class="text-danger">*</span>
+                </label>
+                <div class="mt-2">
+                    <div class="form-check form-check-inline">
+                        <input asp-for="SiteActive" type="radio" value="true" class="form-check-input" id="editActiveTrue"
+                               asp-checked="Model.SiteActive" required />
+                        <label class="form-check-label text-success fw-semibold" for="editActiveTrue">
+                            <i class="bi bi-check-circle me-1"></i>Activo
+                        </label>
+                    </div>
+                    <div class="form-check form-check-inline">
+                        <input asp-for="SiteActive" type="radio" value="false" class="form-check-input" id="editActiveFalse"
+                               asp-checked="!Model.SiteActive" required />
+                        <label class="form-check-label text-danger fw-semibold" for="editActiveFalse">
+                            <i class="bi bi-x-circle me-1"></i>Inactivo
+                        </label>
+                    </div>
+                </div>
+
+                <span asp-validation-for="SiteActive" class="text-danger small"></span>
+            </div>
+        </div>
     </div>
-</div>
 
-<div>
-    <a asp-action="Index">Back to List</a>
-</div>
+    <div class="modal-footer">
+        <button type="submit" class="btn btn-primary">
+            <i class="bi bi-check-circle me-1"></i>Actualizar Sitio
+        </button>
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+            <i class="bi bi-x-circle me-1"></i>Cancelar
+        </button>
+    </div>
+</form>
 
-@section Scripts {
-    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
-}
+<script>
+    $('#editForm').on('submit', function (e) {
+        e.preventDefault();
+
+        $.ajax({
+            url: '/Sites/EditModal/' + $('[name="SiteId"]').val(),
+            type: 'POST',
+            data: $(this).serialize(),
+            success: function (response) {
+                if (response.success) {
+                    closeModal();
+                    reloadPage();
+                    alert(response.message);
+                } else {
+                    $('#modalContent').html(response);
+                }
+            },
+            error: function () {
+                alert('Error al actualizar el sitio');
+            }
+        });
+    });
+</script>
