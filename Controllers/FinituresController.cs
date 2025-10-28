@@ -6,9 +6,13 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using InventorySys.Models;
+using InventorySys.Helpers;
+using Microsoft.AspNetCore.Authorization;
+using System.Security.Claims;
 
 namespace InventorySys.Controllers
 {
+    [Authorize]
     public class FinituresController : Controller
     {
         private readonly InventorySysContext _context;
@@ -18,79 +22,90 @@ namespace InventorySys.Controllers
             _context = context;
         }
 
+        private string GetUserRole()
+        {
+            return User.FindFirst(ClaimTypes.Role)?.Value ?? "";
+        }
+
         // GET: Finitures
         public async Task<IActionResult> Index()
         {
+            var userRole = GetUserRole();
+
+            if (!RolePermissionHelper.CanAccessModule(userRole, RolePermissionHelper.SystemModule.Finitures))
+                return RedirectToAction("AccessDenied", "Home");
+
             return View(await _context.TblFinitures.ToListAsync());
         }
 
-        // GET: Finitures/Details/5
-        public async Task<IActionResult> Details(int? id)
+        // GET: Finitures/CreateModal
+        public IActionResult CreateModal()
         {
-            if (id == null)
-            {
-                return NotFound();
-            }
+            var userRole = GetUserRole();
 
-            var tblFiniture = await _context.TblFinitures
-                .FirstOrDefaultAsync(m => m.FinitureId == id);
-            if (tblFiniture == null)
-            {
+            if (!RolePermissionHelper.CanCreate(userRole, RolePermissionHelper.SystemModule.Finitures))
                 return NotFound();
-            }
 
-            return View(tblFiniture);
+            return PartialView("Create", new TblFiniture());
         }
 
-        // GET: Finitures/Create
-        public IActionResult Create()
-        {
-            return View();
-        }
-
-        // POST: Finitures/Create
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
+        // POST: Finitures/CreateModal
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("FinitureId,FinitureCode,FinitureName,FinitureActive")] TblFiniture tblFiniture)
+        public async Task<IActionResult> CreateModal([Bind("FinitureId,FinitureCode,FinitureName,FinitureActive")] TblFiniture tblFiniture)
         {
+            var userRole = GetUserRole();
+
+            if (!RolePermissionHelper.CanCreate(userRole, RolePermissionHelper.SystemModule.Finitures))
+                return Json(new { success = false, message = "No tienes permiso para crear acabados." });
+
             if (ModelState.IsValid)
             {
-                _context.Add(tblFiniture);
-                await _context.SaveChangesAsync();
-                return RedirectToAction(nameof(Index));
+                try
+                {
+                    _context.Add(tblFiniture);
+                    await _context.SaveChangesAsync();
+                    return Json(new { success = true, message = "Acabado creado exitosamente." });
+                }
+                catch (Exception ex)
+                {
+                    return Json(new { success = false, message = ex.Message });
+                }
             }
-            return View(tblFiniture);
+
+            return PartialView("Create", tblFiniture);
         }
 
-        // GET: Finitures/Edit/5
-        public async Task<IActionResult> Edit(int? id)
+        // GET: Finitures/EditModal/5
+        public async Task<IActionResult> EditModal(int? id)
         {
-            if (id == null)
-            {
+            var userRole = GetUserRole();
+
+            if (!RolePermissionHelper.CanEdit(userRole, RolePermissionHelper.SystemModule.Finitures))
                 return NotFound();
-            }
+
+            if (id == null)
+                return NotFound();
 
             var tblFiniture = await _context.TblFinitures.FindAsync(id);
             if (tblFiniture == null)
-            {
                 return NotFound();
-            }
-            return View(tblFiniture);
+
+            return PartialView("Edit", tblFiniture);
         }
 
-        // POST: Finitures/Edit/5
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
+        // POST: Finitures/EditModal/5
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("FinitureId,FinitureCode,FinitureName,FinitureActive")] TblFiniture tblFiniture)
+        public async Task<IActionResult> EditModal(int id, [Bind("FinitureId,FinitureCode,FinitureName,FinitureActive")] TblFiniture tblFiniture)
         {
+            var userRole = GetUserRole();
+
+            if (!RolePermissionHelper.CanEdit(userRole, RolePermissionHelper.SystemModule.Finitures))
+                return Json(new { success = false, message = "No tienes permiso para editar acabados." });
+
             if (id != tblFiniture.FinitureId)
-            {
                 return NotFound();
-            }
 
             if (ModelState.IsValid)
             {
@@ -98,54 +113,69 @@ namespace InventorySys.Controllers
                 {
                     _context.Update(tblFiniture);
                     await _context.SaveChangesAsync();
+                    return Json(new { success = true, message = "Acabado actualizado exitosamente." });
                 }
                 catch (DbUpdateConcurrencyException)
                 {
                     if (!TblFinitureExists(tblFiniture.FinitureId))
-                    {
                         return NotFound();
-                    }
                     else
-                    {
                         throw;
-                    }
                 }
-                return RedirectToAction(nameof(Index));
+                catch (Exception ex)
+                {
+                    return Json(new { success = false, message = ex.Message });
+                }
             }
-            return View(tblFiniture);
+
+            return PartialView("Edit", tblFiniture);
         }
 
-        // GET: Finitures/Delete/5
-        public async Task<IActionResult> Delete(int? id)
+        // GET: Finitures/DeleteModal/5
+        public async Task<IActionResult> DeleteModal(int? id)
         {
-            if (id == null)
-            {
+            var userRole = GetUserRole();
+
+            if (!RolePermissionHelper.CanDelete(userRole, RolePermissionHelper.SystemModule.Finitures))
                 return NotFound();
-            }
+
+            if (id == null)
+                return NotFound();
 
             var tblFiniture = await _context.TblFinitures
                 .FirstOrDefaultAsync(m => m.FinitureId == id);
-            if (tblFiniture == null)
-            {
-                return NotFound();
-            }
 
-            return View(tblFiniture);
+            if (tblFiniture == null)
+                return NotFound();
+
+            return PartialView("Delete", tblFiniture);
         }
 
-        // POST: Finitures/Delete/5
-        [HttpPost, ActionName("Delete")]
+        // POST: Finitures/DeleteModal
+        [HttpPost, ActionName("DeleteModal")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            var tblFiniture = await _context.TblFinitures.FindAsync(id);
-            if (tblFiniture != null)
-            {
-                _context.TblFinitures.Remove(tblFiniture);
-            }
+            var userRole = GetUserRole();
 
-            await _context.SaveChangesAsync();
-            return RedirectToAction(nameof(Index));
+            if (!RolePermissionHelper.CanDelete(userRole, RolePermissionHelper.SystemModule.Finitures))
+                return Json(new { success = false, message = "No tienes permiso para eliminar acabados." });
+
+            try
+            {
+                var tblFiniture = await _context.TblFinitures.FindAsync(id);
+                if (tblFiniture != null)
+                {
+                    _context.TblFinitures.Remove(tblFiniture);
+                }
+
+                await _context.SaveChangesAsync();
+                return Json(new { success = true, message = "Acabado eliminado exitosamente." });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = ex.Message });
+            }
         }
 
         private bool TblFinitureExists(int id)
