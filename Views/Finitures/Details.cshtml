@@ -1,0 +1,36 @@
+﻿@model InventorySys.Models.TblFiniture
+
+@{
+    ViewData["Title"] = "Details";
+}
+
+<h1>Details</h1>
+
+<div>
+    <h4>TblFiniture</h4>
+    <hr />
+    <dl class="row">
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.FinitureCode)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.FinitureCode)
+        </dd>
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.FinitureName)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.FinitureName)
+        </dd>
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.FinitureActive)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.FinitureActive)
+        </dd>
+    </dl>
+</div>
+<div>
+    <a asp-action="Edit" asp-route-id="@Model?.FinitureId">Edit</a> |
+    <a asp-action="Index">Back to List</a>
+</div>
