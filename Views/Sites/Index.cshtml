@@ -2,46 +2,109 @@
 
 @{
     ViewData["Title"] = "Index";
+    var userRole = User.FindFirst(System.Security.Claims.ClaimTypes.Role)?.Value;
 }
 
-<h1>Index</h1>
+<!-- Breadcrumb fuera del card -->
+<div class="app-content-header">
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-sm-6">
+                <h3 class="mb-0">
+                    <i class="bi bi-geo-alt-fill me-2"></i>Sitios
+                </h3>
+            </div>
+            <div class="col-sm-6">
+                <ol class="breadcrumb float-sm-end">
+                    <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">Inicio</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">Sitios</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</div>
 
-<p>
-    <a asp-action="Create">Create New</a>
-</p>
-<table class="table">
-    <thead>
-        <tr>
-            <th>
-                @Html.DisplayNameFor(model => model.SiteName)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.SiteLocation)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.SiteActive)
-            </th>
-            <th></th>
-        </tr>
-    </thead>
-    <tbody>
-@foreach (var item in Model) {
-        <tr>
-            <td>
-                @Html.DisplayFor(modelItem => item.SiteName)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.SiteLocation)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.SiteActive)
-            </td>
-            <td>
-                <a asp-action="Edit" asp-route-id="@item.SiteId">Edit</a> |
-                <a asp-action="Details" asp-route-id="@item.SiteId">Details</a> |
-                <a asp-action="Delete" asp-route-id="@item.SiteId">Delete</a>
-            </td>
-        </tr>
-}
-    </tbody>
-</table>
+<!-- Content Section -->
+<section class="content">
+    <div class="container-fluid">
+        <!-- Card con sombra -->
+        <div class="card shadow-sm">
+            <div class="card-header bg-white py-3 border-bottom">
+                <div class="row align-items-center">
+                    <div class="col-12">
+                        @if (RolePermissionHelper.CanCreate(userRole, RolePermissionHelper.SystemModule.Sites))
+                        {
+                            <button type="button" class="btn btn-success" onclick="openCreateModal()">
+                                <i class="bi bi-plus-lg"></i> Crear Nuevo
+                            </button>
+                        }
+                    </div>
+                </div>
+            </div>
+
+            <!-- Card Body -->
+            <div class="card-body">
+                <table class="table table-bordered table-striped dataTables1">
+                    <thead>
+                        <tr>
+                            <th>Nombre del Sitio</th>
+                            <th>Ubicación</th>
+                            <th>Estado</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in Model)
+                        {
+                            <tr>
+                                <td>@item.SiteName</td>
+                                <td>@item.SiteLocation</td>
+                                <td class="text-center">
+                                    <span class="badge @(item.SiteActive ? "bg-success" : "bg-danger") fs-6">
+                                        <i class="bi @(item.SiteActive ? "bi-check-circle" : "bi-x-circle") me-1"></i>
+                                        @(item.SiteActive ? "Activo" : "Inactivo")
+                                    </span>
+                                </td>
+                                <td>
+                                    <div class="d-flex justify-content-center gap-1">
+                                        @if (RolePermissionHelper.CanEdit(userRole, RolePermissionHelper.SystemModule.Sites))
+                                        {
+                                            <button class="btn btn-sm btn-primary" onclick="openEditModal(@item.SiteId)">
+                                                <i class="bi bi-pencil-square"></i> Editar
+                                            </button>
+                                        }
+
+                                        @if (RolePermissionHelper.CanDelete(userRole, RolePermissionHelper.SystemModule.Sites))
+                                        {
+                                            <button class="btn btn-sm btn-danger" onclick="openDeleteModal(@item.SiteId)">
+                                                <i class="bi bi-trash3"></i> Eliminar
+                                            </button>
+                                        }
+
+                                        @if (!RolePermissionHelper.CanEdit(userRole, RolePermissionHelper.SystemModule.Sites) &&
+                                       !RolePermissionHelper.CanDelete(userRole, RolePermissionHelper.SystemModule.Sites))
+                                        {
+                                            <span class="text-muted">
+                                                <i class="bi bi-lock-fill me-1"></i> Sin acceso
+                                            </span>
+                                        }
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Modal Container -->
+<div class="modal fade" id="siteModal" tabindex="-1" aria-labelledby="siteModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content" id="modalContent">
+            <!-- El contenido se cargará aquí dinámicamente -->
+        </div>
+    </div>
+</div>
+
