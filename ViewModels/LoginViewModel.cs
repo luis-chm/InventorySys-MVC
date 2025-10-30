@@ -14,5 +14,9 @@ namespace InventorySys.ViewModels
 
         [Display(Name = "Recordarme")]
         public bool RememberMe { get; set; }
+
+        [Required(ErrorMessage = "Debes aceptar la Política de Privacidad para continuar")]
+        [Range(typeof(bool), "true", "true", ErrorMessage = "Debes aceptar la Política de Privacidad")]
+        public bool AcceptPrivacyPolicy { get; set; }
     }
 }

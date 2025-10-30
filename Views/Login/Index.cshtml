@@ -3,72 +3,226 @@
     ViewData["Title"] = "Iniciar Sesión";
     Layout = null;
 }
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"]</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+    <meta name="description" content="" />
+    <meta name="author" content="" />
+    <title>Login</title>
+    <link href="~/css/styles.css" rel="stylesheet" />
+    <link href="~/Content/dist/css/styleslogin.css" rel="stylesheet" />
+    <script src="https://use.fontawesome.com/releases/v6.3.0/js/all.js" crossorigin="anonymous"></script>
 </head>
-<body class="bg-light">
-    <div class="container-fluid vh-100">
-        <div class="row h-100">
-            <div class="col-md-6 d-flex align-items-center justify-content-center">
-                <div class="card shadow-lg" style="width: 400px;">
-                    <div class="card-header bg-dark text-white text-center">
-                        <h3 class="mb-0">
-                            <i class="bi bi-person-circle me-2"></i>Iniciar Sesión
-                        </h3>
-                    </div>
-                    <div class="card-body p-4">
-                        <form asp-action="Index" method="post">
-                            <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
+<body class="bg-primary" style="background-color: #41464b !important;">
+    <div id="layoutAuthentication">
+        <div id="layoutAuthentication_content">
+            <main>
+                <div class="container">
+                    <div class="row justify-content-center">
+                        <div class="col-lg-5">
+                            <div class="card shadow-lg border-0 rounded-lg mt-5">
+                                <div class="card-header">
+                                    <h3 class="text-center font-weight-light my-4">Login</h3>
+                                </div>
+                                @if (!string.IsNullOrEmpty(ViewBag.AlertMessage))
+                                {
+                                    <div class="alert alert-danger alert-dismissible fade show m-3" role="alert">
+                                        @Html.Raw(ViewBag.AlertMessage)
+                                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                                    </div>
+                                }
+                                <div class="card-body">
+                                    <form asp-action="Index" method="post" class="signin-form">
+                                        <div class="form-floating mb-3">
+                                            <input asp-for="Email" class="form-control" placeholder="name@example.com" required />
+                                            <label asp-for="Email">Email</label>
+                                            <span asp-validation-for="Email" class="text-danger small d-block"></span>
+                                        </div>
+                                        <div class="form-floating mb-3">
+                                            <input asp-for="Password" class="form-control" placeholder="Password" required />
+                                            <label asp-for="Password">Password</label>
+                                            <span asp-validation-for="Password" class="text-danger small d-block"></span>
+                                        </div>
 
-                            <div class="form-group mb-3">
-                                <label asp-for="Email" class="form-label">
-                                    <i class="bi bi-envelope me-1"></i>Email
-                                </label>
-                                <input asp-for="Email" class="form-control form-control-lg"
-                                       placeholder="correo@ejemplo.com" required />
-                                <span asp-validation-for="Email" class="text-danger"></span>
+                                        <!-- CHECKBOX: Consentimiento Política de Privacidad - REQUERIDO -->
+                                        <div class="form-check mb-3">
+                                            <input asp-for="AcceptPrivacyPolicy" type="checkbox" class="form-check-input" required />
+                                            <label class="form-check-label" asp-for="AcceptPrivacyPolicy">
+                                                <small>
+                                                    <i class="fas fa-shield-alt me-2"></i>
+                                                    He leído y acepto la
+                                                    <a href="#" data-bs-toggle="modal" data-bs-target="#privacyPolicyModal" class="text-decoration-none fw-bold">
+                                                        Política de Privacidad
+                                                    </a>
+                                                </small>
+                                            </label>
+                                            <span asp-validation-for="AcceptPrivacyPolicy" class="text-danger small d-block"></span>
+                                        </div>
+
+                                        <div class="d-flex align-items-center justify-content-between mt-4 mb-0">
+                                            <a class="small" href="#"></a>
+                                            <button type="submit" class="btn btn-secondary">Login</button>
+                                        </div>
+                                    </form>
+                                </div>
+                                <div class="card-footer text-center py-3">
+                                    <div class="small">
+                                        <a href="#" data-bs-toggle="modal" data-bs-target="#forgotPasswordModal">¿Olvidó su contraseña? ¡Contáctenos!</a>
+                                    </div>
+                                </div>
                             </div>
-
-                            <div class="form-group mb-3">
-                                <label asp-for="Password" class="form-label">
-                                    <i class="bi bi-lock me-1"></i>Contraseña
-                                </label>
-                                <input asp-for="Password" type="password"
-                                       class="form-control form-control-lg"
-                                       placeholder="Ingrese su contraseña" required />
-                                <span asp-validation-for="Password" class="text-danger"></span>
-                            </div>
-
-                            <div class="form-check mb-3">
-                                <input asp-for="RememberMe" class="form-check-input" />
-                                <label asp-for="RememberMe" class="form-check-label">
-                                    Recordarme
-                                </label>
-                            </div>
-
-                            <button type="submit" class="btn btn-primary btn-lg w-100">
-                                <i class="bi bi-box-arrow-in-right me-1"></i>Iniciar Sesión
-                            </button>
-                        </form>
+                        </div>
                     </div>
                 </div>
-            </div>
-            <div class="col-md-6 bg-primary d-flex align-items-center justify-content-center">
-                <div class="text-white text-center">
-                    <h1>Bienvenido</h1>
-                    <p class="lead">Sistema de Inventario</p>
+            </main>
+        </div>
+        <div id="layoutAuthentication_footer">
+            <footer class="py-4 bg-light mt-auto">
+                <div class="container-fluid px-4">
+                    <div class="d-flex align-items-center justify-content-between small">
+                        <div class="text-muted fw-bold">Copyright &copy; Mirage CR 2025</div>
+                        <div>
+                            <a href="#" data-bs-toggle="modal" data-bs-target="#privacyPolicyModal">Privacy Policy</a>
+                            &middot;
+                        </div>
+                    </div>
+                </div>
+            </footer>
+        </div>
+    </div>
+
+    <!-- Modal de Contraseña Olvidada -->
+    <div class="modal fade" id="forgotPasswordModal" tabindex="-1" aria-labelledby="forgotPasswordModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title" id="forgotPasswordModalLabel">
+                        <i class="fas fa-lock me-2"></i>Contraseña Olvidada
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body text-center">
+                    <div class="mb-3">
+                        <i class="fas fa-envelope-open-text fa-3x text-primary mb-3"></i>
+                        <h6 class="fw-bold">¿Olvidó su contraseña?</h6>
+                        <p class="text-muted mb-3">
+                            Por favor contacte a nuestro equipo de soporte técnico para restablecer su contraseña.
+                        </p>
+                    </div>
+
+                    <div class="alert alert-info d-flex align-items-center" role="alert">
+                        <i class="fas fa-info-circle me-2"></i>
+                        <div>
+                            <strong>Correo de soporte:</strong><br>
+                            <a href="mailto:soporte@mirage.cr" class="text-decoration-none">soporte@mirage.cr</a>
+                        </div>
+                    </div>
+
+                    <div class="alert alert-warning d-flex align-items-center" role="alert">
+                        <i class="fas fa-clock me-2"></i>
+                        <div>
+                            <small>
+                                <strong>Horario de atención:</strong><br>
+                                Lunes a Viernes: 8:00 AM - 5:00 PM
+                            </small>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        <i class="fas fa-times me-1"></i>Cerrar
+                    </button>
                 </div>
             </div>
         </div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Modal de Política de Privacidad -->
+    <div class="modal fade" id="privacyPolicyModal" tabindex="-1" aria-labelledby="privacyPolicyModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg modal-dialog-scrollable">
+            <div class="modal-content">
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title" id="privacyPolicyModalLabel">
+                        <i class="fas fa-shield-alt me-2"></i>Política de Privacidad - Sistema InventorySYS
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <p><strong>Responsable del Tratamiento:</strong> [Nombre de la Empresa S.A.]</p>
+                        <p><strong>Contacto:</strong> privacidad@empresa.com | Tel: +506 XXXX-XXXX</p>
+                    </div>
+
+                    <hr>
+
+                    <h6 class="fw-bold mb-3">Introducción</h6>
+                    <p class="text-muted">
+                        El sistema InventorySYS fue desarrollado con el compromiso de cumplir con lo establecido en la
+                        <strong>Ley 8968 – Ley de Protección de la Persona frente al Tratamiento de sus Datos Personales de Costa Rica</strong>.
+                        Esta normativa regula el tratamiento de datos personales, garantizando la privacidad, autodeterminación informativa
+                        y protección de los derechos de los usuarios.
+                    </p>
+
+                    <h6 class="fw-bold mb-2 mt-4">Datos que Recolectamos</h6>
+                    <p class="text-muted">
+                        El sistema recolecta únicamente información esencial de empleados autorizados: nombre completo, correo electrónico
+                        corporativo, contraseña (almacenada cifrada) y rol laboral. <strong>NO</strong> recolectamos datos sensibles como
+                        religión, estado de salud, orientación sexual, opiniones políticas u origen racial, según el Artículo 9 de la Ley 8968.
+                    </p>
+
+                    <h6 class="fw-bold mb-2 mt-4">Finalidad del Tratamiento</h6>
+                    <p class="text-muted">
+                        Los datos se utilizan exclusivamente para: autenticación y control de acceso al sistema, asignación de permisos
+                        según rol laboral, auditoría de operaciones sobre inventario (trazabilidad) y comunicaciones internas.
+                        NO utilizamos sus datos para marketing ni los compartimos con terceros, nacionales o internacionales.
+                    </p>
+
+                    <h6 class="fw-bold mb-2 mt-4">Sus Derechos</h6>
+                    <p class="text-muted">
+                        Como titular de datos personales, usted tiene derecho a acceder a sus datos, rectificar información incorrecta,
+                        suprimir sus datos al finalizar la relación laboral y conocer el historial de operaciones realizadas.
+                        Para ejercer estos derechos, contacte a <strong>privacidad@empresa.com</strong>. Responderemos en máximo 5 días hábiles.
+                    </p>
+
+                    <h6 class="fw-bold mb-2 mt-4">Conservación de Datos</h6>
+                    <ul class="text-muted">
+                        <li>Sus datos permanecen activos durante su relación laboral</li>
+                        <li>Al finalizar, serán eliminados en 30 días</li>
+                        <li>Los registros de auditoría se conservan 10 años con identificadores anónimos para trazabilidad</li>
+                    </ul>
+
+                    <h6 class="fw-bold mb-2 mt-4">Seguridad</h6>
+                    <p class="text-muted">
+                        Implementamos contraseñas cifradas, control de acceso por roles, auditoría automática de operaciones críticas
+                        y acceso restringido a empleados autorizados.
+                    </p>
+
+                    <h6 class="fw-bold mb-2 mt-4">Auditoría</h6>
+                    <p class="text-muted">
+                        El sistema registra automáticamente operaciones de inventario (inserción, modificación, eliminación) con
+                        identificador de usuario, fecha/hora y descripción de cambios. NO monitoreamos tiempo de inactividad ni páginas visitadas.
+                    </p>
+
+                    <div class="alert alert-info mt-4" role="alert">
+                        <i class="fas fa-info-circle me-2"></i>
+                        <strong>Contacto y Autoridad:</strong><br>
+                        Para dudas o ejercer derechos: privacidad@empresa.com | +506 XXXX-XXXX<br>
+                        Para denuncias: <strong>PRODHAB</strong> <a href="https://www.prodhab.go.cr" target="_blank">www.prodhab.go.cr</a> | 800-776-3422
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        <i class="fas fa-times me-1"></i>Cerrar
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
+    <script src="~/js/scripts.js"></script>
 </body>
 </html>
