@@ -1,0 +1,73 @@
+﻿@model InventorySys.Models.TblMaterial
+
+@{
+    ViewData["Title"] = "Create";
+}
+
+<h1>Create</h1>
+
+<h4>TblMaterial</h4>
+<hr />
+<div class="row">
+    <div class="col-md-4">
+        <form asp-action="Create">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <div class="form-group">
+                <label asp-for="MaterialCode" class="control-label"></label>
+                <input asp-for="MaterialCode" class="form-control" />
+                <span asp-validation-for="MaterialCode" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="MaterialDescription" class="control-label"></label>
+                <input asp-for="MaterialDescription" class="form-control" />
+                <span asp-validation-for="MaterialDescription" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="CollectionId" class="control-label"></label>
+                <select asp-for="CollectionId" class ="form-control" asp-items="ViewBag.CollectionId"></select>
+            </div>
+            <div class="form-group">
+                <label asp-for="FinitureId" class="control-label"></label>
+                <select asp-for="FinitureId" class ="form-control" asp-items="ViewBag.FinitureId"></select>
+            </div>
+            <div class="form-group">
+                <label asp-for="FormatId" class="control-label"></label>
+                <select asp-for="FormatId" class ="form-control" asp-items="ViewBag.FormatId"></select>
+            </div>
+            <div class="form-group">
+                <label asp-for="SiteId" class="control-label"></label>
+                <select asp-for="SiteId" class ="form-control" asp-items="ViewBag.SiteId"></select>
+            </div>
+            <div class="form-group">
+                <label asp-for="MaterialImg" class="control-label"></label>
+                <input asp-for="MaterialImg" class="form-control" />
+                <span asp-validation-for="MaterialImg" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="MaterialReceivedDate" class="control-label"></label>
+                <input asp-for="MaterialReceivedDate" class="form-control" />
+                <span asp-validation-for="MaterialReceivedDate" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="MaterialStock" class="control-label"></label>
+                <input asp-for="MaterialStock" class="form-control" />
+                <span asp-validation-for="MaterialStock" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="UserId" class="control-label"></label>
+                <select asp-for="UserId" class ="form-control" asp-items="ViewBag.UserId"></select>
+            </div>
+            <div class="form-group">
+                <input type="submit" value="Create" class="btn btn-primary" />
+            </div>
+        </form>
+    </div>
+</div>
+
+<div>
+    <a asp-action="Index">Back to List</a>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

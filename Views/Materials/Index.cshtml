@@ -1,0 +1,95 @@
+﻿@model IEnumerable<InventorySys.Models.TblMaterial>
+
+@{
+    ViewData["Title"] = "Index";
+}
+
+<h1>Index</h1>
+
+<p>
+    <a asp-action="Create">Create New</a>
+</p>
+<table class="table">
+    <thead>
+        <tr>
+            <th>
+                @Html.DisplayNameFor(model => model.MaterialCode)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.MaterialDescription)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.MaterialImg)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.MaterialReceivedDate)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.MaterialStock)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.RecordInsertDateTime)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Collection)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Finiture)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Format)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Site)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.User)
+            </th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+@foreach (var item in Model) {
+        <tr>
+            <td>
+                @Html.DisplayFor(modelItem => item.MaterialCode)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.MaterialDescription)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.MaterialImg)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.MaterialReceivedDate)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.MaterialStock)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.RecordInsertDateTime)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Collection.CollectionId)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Finiture.FinitureId)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Format.FormatId)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Site.SiteId)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.User.UserId)
+            </td>
+            <td>
+                <a asp-action="Edit" asp-route-id="@item.MaterialId">Edit</a> |
+                <a asp-action="Details" asp-route-id="@item.MaterialId">Details</a> |
+                <a asp-action="Delete" asp-route-id="@item.MaterialId">Delete</a>
+            </td>
+        </tr>
+}
+    </tbody>
+</table>

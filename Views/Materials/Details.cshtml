@@ -1,0 +1,84 @@
+﻿@model InventorySys.Models.TblMaterial
+
+@{
+    ViewData["Title"] = "Details";
+}
+
+<h1>Details</h1>
+
+<div>
+    <h4>TblMaterial</h4>
+    <hr />
+    <dl class="row">
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.MaterialCode)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.MaterialCode)
+        </dd>
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.MaterialDescription)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.MaterialDescription)
+        </dd>
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.MaterialImg)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.MaterialImg)
+        </dd>
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.MaterialReceivedDate)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.MaterialReceivedDate)
+        </dd>
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.MaterialStock)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.MaterialStock)
+        </dd>
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.RecordInsertDateTime)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.RecordInsertDateTime)
+        </dd>
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.Collection)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.Collection.CollectionId)
+        </dd>
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.Finiture)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.Finiture.FinitureId)
+        </dd>
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.Format)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.Format.FormatId)
+        </dd>
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.Site)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.Site.SiteId)
+        </dd>
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.User)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.User.UserId)
+        </dd>
+    </dl>
+</div>
+<div>
+    <a asp-action="Edit" asp-route-id="@Model?.MaterialId">Edit</a> |
+    <a asp-action="Index">Back to List</a>
+</div>
