@@ -13,54 +13,25 @@ namespace InventorySys.Controllers
     {
         private readonly InventorySysContext _context;
 
-        //queda pendiente implementacion de dashboard controller
-
-        public DashboardController(InventorySysContext context)
+        public DetailMovementsController(InventorySysContext context)
         {
             _context = context;
         }
 
-        // GET: Dashboard
+        // GET: DetailMovements
         public async Task<IActionResult> Index()
         {
-            var dashboardData = new Dictionary<string, object>();
+            var detailMovements = _context.TblDetailMovements
+                .Include(d => d.MaterialTransaction)
+                .ThenInclude(m => m.Material)
+                .ToListAsync();
 
-            // Total de Materiales
-            dashboardData["TotalMateriales"] = await _context.TblMaterials.CountAsync();
-
-            // Stock Total
-            dashboardData["StockTotal"] = await _context.TblMaterials
-                .SumAsync(m => (decimal?)m.MaterialStock) ?? 0;
-
-            // Total de Transacciones
-            dashboardData["TotalTransacciones"] = await _context.TblMaterialTransactions.CountAsync();
-
-            // Colecciones Activas
-            dashboardData["ColeccionesActivas"] = await _context.TblCollections
-                .Where(c => c.CollectionActive == true)
-                .CountAsync();
-
-            // Sitios Activos
-            dashboardData["SitiosActivos"] = await _context.TblSites
-                .Where(s => s.SiteActive == true)
-                .CountAsync();
-
-            // Formatos Activos
-            dashboardData["FormatosActivos"] = await _context.TblFormats
-                .Where(f => f.FormatActive == true)
-                .CountAsync();
-
-            // Acabados Activos
-            dashboardData["AcabadosActivos"] = await _context.TblFinitures
-                .Where(f => f.FinitureActive == true)
-                .CountAsync();
-
-            // Usuarios Registrados
-            dashboardData["UsuariosRegistrados"] = await _context.TblUsers.CountAsync();
-
-            return View(dashboardData);
+            return View(await detailMovements);
         }
-
-
+        private bool TblDetailMovementExists(int id)
+        {
+            return _context.TblDetailMovements.Any(e => e.DetailMovId == id);
+        }
     }
+
 }
