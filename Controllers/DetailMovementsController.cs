@@ -13,151 +13,54 @@ namespace InventorySys.Controllers
     {
         private readonly InventorySysContext _context;
 
-        public DetailMovementsController(InventorySysContext context)
+        //queda pendiente implementacion de dashboard controller
+
+        public DashboardController(InventorySysContext context)
         {
             _context = context;
         }
 
-        // GET: DetailMovements
+        // GET: Dashboard
         public async Task<IActionResult> Index()
         {
-            var inventorySysContext = _context.TblDetailMovements.Include(t => t.MaterialTransaction);
-            return View(await inventorySysContext.ToListAsync());
+            var dashboardData = new Dictionary<string, object>();
+
+            // Total de Materiales
+            dashboardData["TotalMateriales"] = await _context.TblMaterials.CountAsync();
+
+            // Stock Total
+            dashboardData["StockTotal"] = await _context.TblMaterials
+                .SumAsync(m => (decimal?)m.MaterialStock) ?? 0;
+
+            // Total de Transacciones
+            dashboardData["TotalTransacciones"] = await _context.TblMaterialTransactions.CountAsync();
+
+            // Colecciones Activas
+            dashboardData["ColeccionesActivas"] = await _context.TblCollections
+                .Where(c => c.CollectionActive == true)
+                .CountAsync();
+
+            // Sitios Activos
+            dashboardData["SitiosActivos"] = await _context.TblSites
+                .Where(s => s.SiteActive == true)
+                .CountAsync();
+
+            // Formatos Activos
+            dashboardData["FormatosActivos"] = await _context.TblFormats
+                .Where(f => f.FormatActive == true)
+                .CountAsync();
+
+            // Acabados Activos
+            dashboardData["AcabadosActivos"] = await _context.TblFinitures
+                .Where(f => f.FinitureActive == true)
+                .CountAsync();
+
+            // Usuarios Registrados
+            dashboardData["UsuariosRegistrados"] = await _context.TblUsers.CountAsync();
+
+            return View(dashboardData);
         }
 
-        // GET: DetailMovements/Details/5
-        public async Task<IActionResult> Details(int? id)
-        {
-            if (id == null)
-            {
-                return NotFound();
-            }
 
-            var tblDetailMovement = await _context.TblDetailMovements
-                .Include(t => t.MaterialTransaction)
-                .FirstOrDefaultAsync(m => m.DetailMovId == id);
-            if (tblDetailMovement == null)
-            {
-                return NotFound();
-            }
-
-            return View(tblDetailMovement);
-        }
-
-        // GET: DetailMovements/Create
-        public IActionResult Create()
-        {
-            ViewData["MaterialTransactionId"] = new SelectList(_context.TblMaterialTransactions, "MaterialTransactionId", "MaterialTransactionId");
-            return View();
-        }
-
-        // POST: DetailMovements/Create
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("DetailMovId,MaterialTransactionId,DetInitBalance,DetCantEntry,DetCantExit,DetCurrentBalance")] TblDetailMovement tblDetailMovement)
-        {
-            if (ModelState.IsValid)
-            {
-                _context.Add(tblDetailMovement);
-                await _context.SaveChangesAsync();
-                return RedirectToAction(nameof(Index));
-            }
-            ViewData["MaterialTransactionId"] = new SelectList(_context.TblMaterialTransactions, "MaterialTransactionId", "MaterialTransactionId", tblDetailMovement.MaterialTransactionId);
-            return View(tblDetailMovement);
-        }
-
-        // GET: DetailMovements/Edit/5
-        public async Task<IActionResult> Edit(int? id)
-        {
-            if (id == null)
-            {
-                return NotFound();
-            }
-
-            var tblDetailMovement = await _context.TblDetailMovements.FindAsync(id);
-            if (tblDetailMovement == null)
-            {
-                return NotFound();
-            }
-            ViewData["MaterialTransactionId"] = new SelectList(_context.TblMaterialTransactions, "MaterialTransactionId", "MaterialTransactionId", tblDetailMovement.MaterialTransactionId);
-            return View(tblDetailMovement);
-        }
-
-        // POST: DetailMovements/Edit/5
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("DetailMovId,MaterialTransactionId,DetInitBalance,DetCantEntry,DetCantExit,DetCurrentBalance")] TblDetailMovement tblDetailMovement)
-        {
-            if (id != tblDetailMovement.DetailMovId)
-            {
-                return NotFound();
-            }
-
-            if (ModelState.IsValid)
-            {
-                try
-                {
-                    _context.Update(tblDetailMovement);
-                    await _context.SaveChangesAsync();
-                }
-                catch (DbUpdateConcurrencyException)
-                {
-                    if (!TblDetailMovementExists(tblDetailMovement.DetailMovId))
-                    {
-                        return NotFound();
-                    }
-                    else
-                    {
-                        throw;
-                    }
-                }
-                return RedirectToAction(nameof(Index));
-            }
-            ViewData["MaterialTransactionId"] = new SelectList(_context.TblMaterialTransactions, "MaterialTransactionId", "MaterialTransactionId", tblDetailMovement.MaterialTransactionId);
-            return View(tblDetailMovement);
-        }
-
-        // GET: DetailMovements/Delete/5
-        public async Task<IActionResult> Delete(int? id)
-        {
-            if (id == null)
-            {
-                return NotFound();
-            }
-
-            var tblDetailMovement = await _context.TblDetailMovements
-                .Include(t => t.MaterialTransaction)
-                .FirstOrDefaultAsync(m => m.DetailMovId == id);
-            if (tblDetailMovement == null)
-            {
-                return NotFound();
-            }
-
-            return View(tblDetailMovement);
-        }
-
-        // POST: DetailMovements/Delete/5
-        [HttpPost, ActionName("Delete")]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> DeleteConfirmed(int id)
-        {
-            var tblDetailMovement = await _context.TblDetailMovements.FindAsync(id);
-            if (tblDetailMovement != null)
-            {
-                _context.TblDetailMovements.Remove(tblDetailMovement);
-            }
-
-            await _context.SaveChangesAsync();
-            return RedirectToAction(nameof(Index));
-        }
-
-        private bool TblDetailMovementExists(int id)
-        {
-            return _context.TblDetailMovements.Any(e => e.DetailMovId == id);
-        }
     }
 }
