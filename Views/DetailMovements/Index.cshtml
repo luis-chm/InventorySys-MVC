@@ -1,59 +1,91 @@
 ﻿@model IEnumerable<InventorySys.Models.TblDetailMovement>
 
 @{
-    ViewData["Title"] = "Index";
+    ViewData["Title"] = "Detalles de Transacciones";
 }
 
-<h1>Index</h1>
+<!-- Breadcrumb -->
+<div class="app-content-header">
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-sm-6">
+                <h3 class="mb-0">
+                    <i class="bi bi-list-check me-2"></i>Detalles de Transacciones
+                </h3>
+            </div>
+            <div class="col-sm-6">
+                <ol class="breadcrumb float-sm-end">
+                    <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">Inicio</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">Detalles de Transacciones</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</div>
 
-<p>
-    <a asp-action="Create">Create New</a>
-</p>
-<table class="table">
-    <thead>
-        <tr>
-            <th>
-                @Html.DisplayNameFor(model => model.DetInitBalance)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.DetCantEntry)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.DetCantExit)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.DetCurrentBalance)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.MaterialTransaction)
-            </th>
-            <th></th>
-        </tr>
-    </thead>
-    <tbody>
-@foreach (var item in Model) {
-        <tr>
-            <td>
-                @Html.DisplayFor(modelItem => item.DetInitBalance)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.DetCantEntry)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.DetCantExit)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.DetCurrentBalance)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.MaterialTransaction.MaterialTransactionId)
-            </td>
-            <td>
-                <a asp-action="Edit" asp-route-id="@item.DetailMovId">Edit</a> |
-                <a asp-action="Details" asp-route-id="@item.DetailMovId">Details</a> |
-                <a asp-action="Delete" asp-route-id="@item.DetailMovId">Delete</a>
-            </td>
-        </tr>
-}
-    </tbody>
-</table>
+<section class="content">
+    <div class="container-fluid">
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-bordered table-striped align-middle dataTables1">
+                        <thead>
+                            <tr>
+                                <th>Código Material</th>
+                                <th>Descripción Material</th>
+                                <th>Fecha Transacción</th>
+                                <th>Tipo Transacción</th>
+                                <th>Cantidad Inicial</th>
+                                <th>Cantidad Ingresada</th>
+                                <th>Cantidad Retirada</th>
+                                <th>Cantidad Actual</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var item in Model)
+                            {
+                                <tr>
+                                    <td>
+                                        <strong class="text-primary">@item.MaterialTransaction?.Material?.MaterialCode</strong>
+                                    </td>
+                                    <td>@item.MaterialTransaction?.Material?.MaterialDescription</td>
+                                    <td class="text-center">
+                                        <small class="text-muted fw-bold">
+                                            <i class="bi bi-calendar3 me-1"></i>
+                                            @item.MaterialTransaction?.MaterialTransactionDate.ToString("dd/MM/yyyy")
+                                        </small>
+                                    </td>
+                                    <td class="text-center">
+                                        @{
+                                            var transactionType = item.MaterialTransaction?.MaterialTransactionType?.ToLower();
+                                            var badgeClass = transactionType == "ingreso" ? "bg-success" : "bg-danger";
+                                        }
+                                        <span class="badge @badgeClass">@item.MaterialTransaction?.MaterialTransactionType</span>
+                                    </td>
+                                    <td class="text-center">@Math.Round(item.DetInitBalance ?? 0)</td>
+                                    <td class="text-center">
+                                        <span class="text-success fw-bold">+@Math.Round(item.DetCantEntry ?? 0)</span>
+                                    </td>
+                                    <td class="text-center">
+                                        <span class="text-danger fw-bold">-@Math.Round(item.DetCantExit ?? 0)</span>
+                                    </td>
+                                    <td class="text-center">
+                                        <span class="badge bg-primary fs-6">@Math.Round(item.DetCurrentBalance ?? 0)</span>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+
+                    @if (!Model.Any())
+                    {
+                        <div class="alert alert-info text-center my-4">
+                            <i class="bi bi-info-circle fs-3 d-block mb-2"></i>
+                            <h5>No hay movimientos registrados</h5>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
