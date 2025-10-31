@@ -1,0 +1,48 @@
+﻿@model InventorySys.Models.TblDetailMovement
+
+@{
+    ViewData["Title"] = "Details";
+}
+
+<h1>Details</h1>
+
+<div>
+    <h4>TblDetailMovement</h4>
+    <hr />
+    <dl class="row">
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.DetInitBalance)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.DetInitBalance)
+        </dd>
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.DetCantEntry)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.DetCantEntry)
+        </dd>
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.DetCantExit)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.DetCantExit)
+        </dd>
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.DetCurrentBalance)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.DetCurrentBalance)
+        </dd>
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.MaterialTransaction)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.MaterialTransaction.MaterialTransactionId)
+        </dd>
+    </dl>
+</div>
+<div>
+    <a asp-action="Edit" asp-route-id="@Model?.DetailMovId">Edit</a> |
+    <a asp-action="Index">Back to List</a>
+</div>

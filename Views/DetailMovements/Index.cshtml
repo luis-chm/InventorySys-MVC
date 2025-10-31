@@ -1,0 +1,59 @@
+﻿@model IEnumerable<InventorySys.Models.TblDetailMovement>
+
+@{
+    ViewData["Title"] = "Index";
+}
+
+<h1>Index</h1>
+
+<p>
+    <a asp-action="Create">Create New</a>
+</p>
+<table class="table">
+    <thead>
+        <tr>
+            <th>
+                @Html.DisplayNameFor(model => model.DetInitBalance)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.DetCantEntry)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.DetCantExit)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.DetCurrentBalance)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.MaterialTransaction)
+            </th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+@foreach (var item in Model) {
+        <tr>
+            <td>
+                @Html.DisplayFor(modelItem => item.DetInitBalance)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.DetCantEntry)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.DetCantExit)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.DetCurrentBalance)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.MaterialTransaction.MaterialTransactionId)
+            </td>
+            <td>
+                <a asp-action="Edit" asp-route-id="@item.DetailMovId">Edit</a> |
+                <a asp-action="Details" asp-route-id="@item.DetailMovId">Details</a> |
+                <a asp-action="Delete" asp-route-id="@item.DetailMovId">Delete</a>
+            </td>
+        </tr>
+}
+    </tbody>
+</table>
