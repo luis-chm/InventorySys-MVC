@@ -4,48 +4,100 @@
     ViewData["Title"] = "Create";
 }
 
-<h1>Create</h1>
+<div class="modal-header bg-success text-white">
+    <h5 class="modal-title">
+        <i class="bi bi-plus-square me-2"></i>Crear Transacción
+    </h5>
+    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+</div>
 
-<h4>TblMaterialTransaction</h4>
-<hr />
-<div class="row">
-    <div class="col-md-4">
-        <form asp-action="Create">
-            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-            <div class="form-group">
-                <label asp-for="MaterialTransactionType" class="control-label"></label>
-                <input asp-for="MaterialTransactionType" class="form-control" />
-                <span asp-validation-for="MaterialTransactionType" class="text-danger"></span>
+<form id="createTransactionForm">
+    @Html.AntiForgeryToken()
+
+    <div class="modal-body">
+        <div asp-validation-summary="ModelOnly" class="alert alert-danger d-none"></div>
+
+        <div class="row g-3">
+            <!-- Tipo de Transacción -->
+            <div class="col-md-6">
+                <label asp-for="MaterialTransactionType" class="form-label fw-semibold">Tipo de Transacción <span class="text-danger">*</span></label>
+                <select asp-for="MaterialTransactionType" class="form-select" required>
+                    <option value="Ingreso">Ingreso</option>
+                    <option value="Retiro">Retiro</option>
+                </select>
+                <span asp-validation-for="MaterialTransactionType" class="text-danger small"></span>
             </div>
-            <div class="form-group">
-                <label asp-for="MaterialTransactionQuantity" class="control-label"></label>
-                <input asp-for="MaterialTransactionQuantity" class="form-control" />
-                <span asp-validation-for="MaterialTransactionQuantity" class="text-danger"></span>
+
+            <!-- Material -->
+            <div class="col-md-6">
+                <label asp-for="MaterialId" class="form-label fw-semibold">Material <span class="text-danger">*</span></label>
+                <select asp-for="MaterialId" class="form-select" asp-items="ViewBag.MaterialId" required>
+                </select>
+                <span asp-validation-for="MaterialId" class="text-danger small"></span>
             </div>
-            <div class="form-group">
-                <label asp-for="MaterialTransactionDate" class="control-label"></label>
-                <input asp-for="MaterialTransactionDate" class="form-control" />
-                <span asp-validation-for="MaterialTransactionDate" class="text-danger"></span>
+
+            <!-- Cantidad -->
+            <div class="col-md-6">
+                <label asp-for="MaterialTransactionQuantity" class="form-label fw-semibold">Cantidad <span class="text-danger">*</span></label>
+                <input asp-for="MaterialTransactionQuantity" class="form-control" type="number" min="1" step="1" required />
+                <span asp-validation-for="MaterialTransactionQuantity" class="text-danger small"></span>
             </div>
-            <div class="form-group">
-                <label asp-for="UserId" class="control-label"></label>
-                <select asp-for="UserId" class ="form-control" asp-items="ViewBag.UserId"></select>
+
+            <!-- Fecha Transacción -->
+            <div class="col-md-6">
+                <label asp-for="MaterialTransactionDate" class="form-label fw-semibold">Fecha Transacción <span class="text-danger">*</span></label>
+                <input asp-for="MaterialTransactionDate" class="form-control" type="date" required />
+                <span asp-validation-for="MaterialTransactionDate" class="text-danger small"></span>
             </div>
-            <div class="form-group">
-                <label asp-for="MaterialId" class="control-label"></label>
-                <select asp-for="MaterialId" class ="form-control" asp-items="ViewBag.MaterialId"></select>
+
+            <!-- Usuario Registrado Por -->
+            <div class="col-md-6">
+                <label class="form-label fw-semibold">Registrado por</label>
+                <input type="text" class="form-control" value="@User?.Identity?.Name" disabled />
+                <input asp-for="UserId" type="hidden" />
             </div>
-            <div class="form-group">
-                <input type="submit" value="Create" class="btn btn-primary" />
-            </div>
-        </form>
+        </div>
     </div>
-</div>
 
-<div>
-    <a asp-action="Index">Back to List</a>
-</div>
+    <div class="modal-footer">
+        <button type="submit" class="btn btn-success">
+            <i class="bi bi-check-circle me-1"></i>Crear Transacción
+        </button>
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+            <i class="bi bi-x-circle me-1"></i>Cancelar
+        </button>
+    </div>
+</form>
 
-@section Scripts {
-    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
-}
+<script>
+    $('#createTransactionForm').on('submit', function (e) {
+        e.preventDefault();
+
+        var formData = new FormData(this);
+        var token = $('input[name="__RequestVerificationToken"]', this).val();
+
+        $.ajax({
+            url: '/MaterialTransactions/CreateModal',
+            type: 'POST',
+            data: formData,
+            processData: false,
+            contentType: false,
+            headers: {
+                'X-CSRF-TOKEN': token
+            },
+            success: function (response) {
+                if (response.success) {
+                    closeModal();
+                    reloadPage();
+                    alert(response.message);
+                } else {
+                    $('#materialTransactionModalContent').html(response);
+                }
+            },
+            error: function (xhr, status, error) {
+                console.error('Error:', error);
+                alert('Error al crear la transacción');
+            }
+        });
+    });
+</script>
