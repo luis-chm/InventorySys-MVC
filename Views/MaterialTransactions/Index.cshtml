@@ -1,59 +1,203 @@
 ﻿@model IEnumerable<InventorySys.Models.TblMaterialTransaction>
 
 @{
-    ViewData["Title"] = "Index";
+    ViewData["Title"] = "Transacciones de Materiales";
+    var userRole = User.FindFirst(System.Security.Claims.ClaimTypes.Role)?.Value;
 }
 
-<h1>Index</h1>
+<!-- Breadcrumb -->
+<div class="app-content-header">
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-sm-6">
+                <h3 class="mb-0">
+                    <i class="bi bi-arrow-left-right me-2"></i>Transacciones de Materiales
+                </h3>
+            </div>
+            <div class="col-sm-6">
+                <ol class="breadcrumb float-sm-end">
+                    <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">Inicio</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">Transacciones</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</div>
 
-<p>
-    <a asp-action="Create">Create New</a>
-</p>
-<table class="table">
-    <thead>
-        <tr>
-            <th>
-                @Html.DisplayNameFor(model => model.MaterialTransactionType)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.MaterialTransactionQuantity)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.MaterialTransactionDate)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Material)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.User)
-            </th>
-            <th></th>
-        </tr>
-    </thead>
-    <tbody>
-@foreach (var item in Model) {
-        <tr>
-            <td>
-                @Html.DisplayFor(modelItem => item.MaterialTransactionType)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.MaterialTransactionQuantity)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.MaterialTransactionDate)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Material.MaterialId)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.User.UserId)
-            </td>
-            <td>
-                <a asp-action="Edit" asp-route-id="@item.MaterialTransactionId">Edit</a> |
-                <a asp-action="Details" asp-route-id="@item.MaterialTransactionId">Details</a> |
-                <a asp-action="Delete" asp-route-id="@item.MaterialTransactionId">Delete</a>
-            </td>
-        </tr>
+<section class="content">
+    <div class="container-fluid">
+        <div class="card shadow-sm">
+            <div class="card-header bg-white py-3 border-bottom">
+                <div class="row align-items-center">
+                    <div class="col-12">
+                        @if (RolePermissionHelper.CanCreate(userRole, RolePermissionHelper.SystemModule.MaterialTransactions))
+                        {
+                            <button type="button" class="btn btn-success" onclick="openCreateModal()">
+                                <i class="bi bi-plus-lg"></i> Crear Nueva
+                            </button>
+                        }
+                    </div>
+                </div>
+            </div>
+
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-bordered table-striped align-middle dataTables1">
+                        <thead>
+                            <tr>
+                                <th>Código Material</th>
+                                <th>Descripción Material</th>
+                                <th>Tipo Transacción</th>
+                                <th>Cantidad</th>
+                                <th>Fecha Transacción</th>
+                                <th>Registrado Por</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var item in Model)
+                            {
+                                <tr>
+                                    <td>
+                                        <strong class="text-primary">@item.Material?.MaterialCode</strong>
+                                    </td>
+                                    <td>@item.Material?.MaterialDescription</td>
+                                    <td class="text-center">
+                                        @{
+                                            var transactionType = item.MaterialTransactionType?.ToLower();
+                                            var badgeClass = transactionType?.Contains("ingreso") == true || transactionType?.Contains("entry") == true ? "bg-success" : "bg-danger";
+                                        }
+                                        <span class="badge @badgeClass">@item.MaterialTransactionType</span>
+                                    </td>
+                                    <td class="text-center fw-bold">
+                                        @item.MaterialTransactionQuantity.ToString("N0")
+                                    </td>
+                                    <td class="text-center">
+                                        <small class="text-muted fw-bold">
+                                            <i class="bi bi-calendar3 me-1"></i>
+                                            @item.MaterialTransactionDate.ToString("dd/MM/yyyy")
+                                        </small>
+                                    </td>
+                                    <td class="text-center">
+                                        <span class="text-center fw-bold">@item.User?.UserName</span>
+                                    </td>
+                                    <td class="text-center">
+                                        <div class="d-flex justify-content-center gap-1">
+                                            @if (RolePermissionHelper.CanEdit(userRole, RolePermissionHelper.SystemModule.MaterialTransactions))
+                                            {
+                                                <a href="javascript:void(0)" class="btn btn-sm btn-primary" onclick="openEditModal(@item.MaterialTransactionId)">
+                                                    <i class="bi bi-pencil-square"></i> Editar
+                                                </a>
+                                            }
+
+                                            @if (RolePermissionHelper.CanDelete(userRole, RolePermissionHelper.SystemModule.MaterialTransactions))
+                                            {
+                                                <a href="javascript:void(0)" class="btn btn-sm btn-danger" onclick="openDeleteModal(@item.MaterialTransactionId)">
+                                                    <i class="bi bi-trash3"></i> Eliminar
+                                                </a>
+                                            }
+
+                                            @if (!RolePermissionHelper.CanEdit(userRole, RolePermissionHelper.SystemModule.MaterialTransactions) &&
+                                           !RolePermissionHelper.CanDelete(userRole, RolePermissionHelper.SystemModule.MaterialTransactions))
+                                            {
+                                                <span class="text-muted">
+                                                    <i class="bi bi-lock-fill me-1"></i> Sin acceso
+                                                </span>
+                                            }
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+
+                    @if (!Model.Any())
+                    {
+                        <div class="alert alert-info text-center my-4">
+                            <i class="bi bi-info-circle fs-3 d-block mb-2"></i>
+                            <h5>No hay transacciones registradas</h5>
+                            <p class="mb-0">Haz clic en "Crear Nueva" para agregar la primera.</p>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Modal Container -->
+<div class="modal fade" id="materialTransactionModal" tabindex="-1" aria-labelledby="materialTransactionModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content" id="materialTransactionModalContent">
+            <!-- El contenido se cargará aquí dinámicamente -->
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function setupAjaxAntiForgeryToken() {
+            var token = $('input[name="__RequestVerificationToken"]').val();
+
+            if (token) {
+                $.ajaxSetup({
+                    beforeSend: function (xhr, settings) {
+                        if (settings.type === 'POST' && !this.crossDomain) {
+                            xhr.setRequestHeader("RequestVerificationToken", token);
+                        }
+                    }
+                });
+            }
+        }
+
+        $(document).ready(function () {
+            setupAjaxAntiForgeryToken();
+        });
+
+        function openCreateModal() {
+            loadModal('/MaterialTransactions/CreateModal', 'Crear Transacción');
+        }
+
+        function openEditModal(id) {
+            loadModal('/MaterialTransactions/EditModal/' + id, 'Editar Transacción');
+        }
+
+        function openDeleteModal(id) {
+            loadModal('/MaterialTransactions/DeleteModal/' + id, 'Eliminar Transacción');
+        }
+
+        function loadModal(url, title) {
+            $.get(url)
+                .done(function (data) {
+                    $('#materialTransactionModalContent').html(data);
+                    var modal = new bootstrap.Modal(document.getElementById('materialTransactionModal'));
+                    modal.show();
+                    setupAjaxAntiForgeryToken();
+                })
+                .fail(function (xhr, status, error) {
+                    if (xhr.status === 404) {
+                        return;
+                    }
+                    alert('Error al cargar el modal: ' + error);
+                });
+        }
+
+        function reloadPage() {
+            location.reload();
+        }
+
+        function closeModal() {
+            var modalElement = document.getElementById('materialTransactionModal');
+            var modal = bootstrap.Modal.getInstance(modalElement);
+            if (modal) {
+                modal.hide();
+            }
+
+            setTimeout(function () {
+                $('.modal-backdrop').remove();
+                $('body').removeClass('modal-open');
+                $('body').css('padding-right', '');
+            }, 300);
+        }
+    </script>
 }
-    </tbody>
-</table>
