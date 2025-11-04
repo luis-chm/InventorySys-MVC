@@ -25,8 +25,273 @@ namespace InventorySys.Controllers
             return View();
         }
 
+        // GET: Reports/DownloadMaterialsGeneral
+
+        [HttpGet]
+
+        public async Task<IActionResult> DownloadMaterialsGeneral()
+
+        {
+
+            try
+
+            {
+
+                var materials = await _context.TblMaterials
+
+                    .Include(m => m.Collection)
+
+                    .Include(m => m.Finiture)
+
+                    .Include(m => m.Format)
+
+                    .Include(m => m.Site)
+
+                    .Include(m => m.User)
+
+                    .ToListAsync();
+
+                using (var workbook = new XLWorkbook())
+
+                {
+
+                    var worksheet = workbook.Worksheets.Add("Materiales");
+
+                    // Encabezados
+
+                    worksheet.Cell(1, 1).Value = "ID Material";
+
+                    worksheet.Cell(1, 2).Value = "Código Material";
+
+                    worksheet.Cell(1, 3).Value = "Descripción Material";
+
+                    worksheet.Cell(1, 4).Value = "Colección";
+
+                    worksheet.Cell(1, 5).Value = "Acabado";
+
+                    worksheet.Cell(1, 6).Value = "Formato";
+
+                    worksheet.Cell(1, 7).Value = "Sitio";
+
+                    worksheet.Cell(1, 8).Value = "Fecha de Ingreso";
+
+                    worksheet.Cell(1, 9).Value = "Stock";
+
+                    worksheet.Cell(1, 10).Value = "Usuario";
+
+                    // Estilo del encabezado
+
+                    var headerRow = worksheet.Row(1);
+
+                    headerRow.Style.Font.Bold = true;
+
+                    headerRow.Style.Fill.BackgroundColor = XLColor.Green;
+
+                    headerRow.Style.Font.FontColor = XLColor.White;
+
+                    // Datos
+
+                    int row = 2;
+
+                    foreach (var material in materials)
+
+                    {
+
+                        worksheet.Cell(row, 1).Value = material.MaterialId;
+
+                        worksheet.Cell(row, 2).Value = material.MaterialCode;
+
+                        worksheet.Cell(row, 3).Value = material.MaterialDescription;
+
+                        worksheet.Cell(row, 4).Value = material.Collection?.CollectionName ?? "";
+
+                        worksheet.Cell(row, 5).Value = material.Finiture?.FinitureName ?? "";
+
+                        worksheet.Cell(row, 6).Value = material.Format?.FormatName ?? "";
+
+                        worksheet.Cell(row, 7).Value = material.Site?.SiteName ?? "";
+
+                        worksheet.Cell(row, 8).Value = material.MaterialReceivedDate.ToString("dd/MM/yyyy");
+
+                        worksheet.Cell(row, 9).Value = material.MaterialStock;
+
+                        worksheet.Cell(row, 10).Value = material.User?.UserName ?? "";
+
+                        row++;
+
+                    }
+
+                    // Ajustar ancho de columnas
+
+                    worksheet.Columns().AdjustToContents();
+
+                    using (var stream = new MemoryStream())
+
+                    {
+
+                        workbook.SaveAs(stream);
+
+                        var content = stream.ToArray();
+
+                        var fileName = $"Reporte_Materiales_General_{DateTime.Now:yyyyMMddHHmmss}.xlsx";
+
+                        return File(content, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", fileName);
+
+                    }
+
+                }
+
+            }
+
+            catch (Exception ex)
+
+            {
+
+                return BadRequest(new { success = false, message = ex.Message });
+
+            }
+
+        }
+
+        // GET: Reports/DownloadMaterialsByDate
+
+        [HttpGet]
+
+        public async Task<IActionResult> DownloadMaterialsByDate(string fechaInicio, string fechaFin)
+
+        {
+
+            try
+
+            {
+
+                if (!DateTime.TryParse(fechaInicio, out var startDateTime) || !DateTime.TryParse(fechaFin, out var endDateTime))
+
+                {
+
+                    return BadRequest(new { success = false, message = "Fechas inválidas" });
+
+                }
+
+                // Convertir DateTime a DateOnly
+
+                var startDate = DateOnly.FromDateTime(startDateTime);
+
+                var endDate = DateOnly.FromDateTime(endDateTime);
+
+                var materials = await _context.TblMaterials
+
+                    .Include(m => m.Collection)
+
+                    .Include(m => m.Finiture)
+
+                    .Include(m => m.Format)
+
+                    .Include(m => m.Site)
+
+                    .Include(m => m.User)
+
+                    .Where(m => m.MaterialReceivedDate >= startDate && m.MaterialReceivedDate <= endDate)
+
+                    .ToListAsync();
+
+                using (var workbook = new XLWorkbook())
+
+                {
+
+                    var worksheet = workbook.Worksheets.Add("Materiales");
+
+                    worksheet.Cell(1, 1).Value = "ID Material";
+
+                    worksheet.Cell(1, 2).Value = "Código Material";
+
+                    worksheet.Cell(1, 3).Value = "Descripción Material";
+
+                    worksheet.Cell(1, 4).Value = "Colección";
+
+                    worksheet.Cell(1, 5).Value = "Acabado";
+
+                    worksheet.Cell(1, 6).Value = "Formato";
+
+                    worksheet.Cell(1, 7).Value = "Sitio";
+
+                    worksheet.Cell(1, 8).Value = "Fecha de Ingreso";
+
+                    worksheet.Cell(1, 9).Value = "Stock";
+
+                    worksheet.Cell(1, 10).Value = "Usuario";
+
+                    var headerRow = worksheet.Row(1);
+
+                    headerRow.Style.Font.Bold = true;
+
+                    headerRow.Style.Fill.BackgroundColor = XLColor.Green;
+
+                    headerRow.Style.Font.FontColor = XLColor.White;
+
+                    int row = 2;
+
+                    foreach (var material in materials)
+
+                    {
+
+                        worksheet.Cell(row, 1).Value = material.MaterialId;
+
+                        worksheet.Cell(row, 2).Value = material.MaterialCode;
+
+                        worksheet.Cell(row, 3).Value = material.MaterialDescription;
+
+                        worksheet.Cell(row, 4).Value = material.Collection?.CollectionName ?? "";
+
+                        worksheet.Cell(row, 5).Value = material.Finiture?.FinitureName ?? "";
+
+                        worksheet.Cell(row, 6).Value = material.Format?.FormatName ?? "";
+
+                        worksheet.Cell(row, 7).Value = material.Site?.SiteName ?? "";
+
+                        worksheet.Cell(row, 8).Value = material.MaterialReceivedDate.ToString("dd/MM/yyyy");
+
+                        worksheet.Cell(row, 9).Value = material.MaterialStock;
+
+                        worksheet.Cell(row, 10).Value = material.User?.UserName ?? "";
+
+                        row++;
+
+                    }
+
+                    worksheet.Columns().AdjustToContents();
+
+                    using (var stream = new MemoryStream())
+
+                    {
+
+                        workbook.SaveAs(stream);
+
+                        var content = stream.ToArray();
+
+                        var fileName = $"Reporte_Materiales_{fechaInicio}_{fechaFin}.xlsx";
+
+                        return File(content, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", fileName);
+
+                    }
+
+                }
+
+            }
+
+            catch (Exception ex)
+
+            {
+
+                return BadRequest(new { success = false, message = ex.Message });
+
+            }
+
+        }
+
 
         // GET: Reports/DownloadTransactionsGeneral
+
 
         [HttpGet]
 
