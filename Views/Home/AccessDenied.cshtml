@@ -1,5 +1,32 @@
-﻿@*
-    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
-*@
-@{
+﻿@{
+
+    ViewData["Title"] = "Acceso Denegado";
+
 }
+
+<div class="container-fluid">
+    <div class="row justify-content-center mt-5">
+        <div class="col-md-6">
+            <div class="card shadow-lg border-0">
+                <div class="card-body text-center p-5">
+                    <i class="bi bi-shield-x text-danger" style="font-size: 6rem;"></i>
+                    <h2 class="mt-4 text-danger fw-bold">Acceso Denegado</h2>
+                    <p class="text-muted mt-3 fs-5">
+
+                        No tienes permisos suficientes para acceder a esta sección.
+                    </p>
+                    <div class="alert alert-warning mt-4" role="alert">
+                        <i class="bi bi-exclamation-triangle me-2"></i>
+
+                        Si crees que esto es un error, contacta al administrador del sistema.
+                    </div>
+                    <hr class="my-4" />
+                    <a asp-controller="Home" asp-action="Index" class="btn btn-primary btn-lg">
+                        <i class="bi bi-house-door me-2"></i>Volver al Inicio
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
