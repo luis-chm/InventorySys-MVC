@@ -150,31 +150,36 @@ namespace InventorySys.Controllers
 
             return PartialView("Delete", tblRole);
         }
-
         // POST: Roles/DeleteModal/5
         [HttpPost, ActionName("DeleteModal")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
             var userRole = GetUserRole();
-
             if (!RolePermissionHelper.CanDelete(userRole, RolePermissionHelper.SystemModule.Roles))
                 return Json(new { success = false, message = "No tienes permiso para eliminar roles." });
 
             try
             {
-                var tblRole = await _context.TblRoles.FindAsync(id);
-                if (tblRole != null)
-                {
-                    _context.TblRoles.Remove(tblRole);
-                }
+                var tblRole = await _context.TblRoles
+                    .Include(r => r.TblUsers) // Ajusta el nombre según tu modelo
+                    .FirstOrDefaultAsync(r => r.RoleId == id);
 
+                if (tblRole == null)
+                    return Json(new { success = false, message = "El rol no existe." });
+
+                // Verificar si el rol tiene usuarios asociados
+                if (tblRole.TblUsers.Any())
+                    return Json(new { success = false, message = "No puedes borrar el rol. Se encuentra asociado a usuarios." });
+
+                _context.TblRoles.Remove(tblRole);
                 await _context.SaveChangesAsync();
+
                 return Json(new { success = true, message = "Rol eliminado exitosamente." });
             }
             catch (Exception ex)
             {
-                return Json(new { success = false, message = ex.Message });
+                return Json(new { success = false, message = "Error al eliminar: " + ex.Message });
             }
         }
     }

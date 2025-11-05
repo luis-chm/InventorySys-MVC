@@ -153,24 +153,30 @@ namespace InventorySys.Controllers
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
             var userRole = GetUserRole();
-
             if (!RolePermissionHelper.CanDelete(userRole, RolePermissionHelper.SystemModule.Sites))
                 return Json(new { success = false, message = "No tienes permiso para eliminar sitios." });
 
             try
             {
-                var tblSite = await _context.TblSites.FindAsync(id);
-                if (tblSite != null)
-                {
-                    _context.TblSites.Remove(tblSite);
-                }
+                var tblSite = await _context.TblSites
+                    .Include(s => s.TblMaterials)
+                    .FirstOrDefaultAsync(s => s.SiteId == id);
 
+                if (tblSite == null)
+                    return Json(new { success = false, message = "El sitio no existe." });
+
+                // Verificar si el sitio tiene materiales asociados
+                if (tblSite.TblMaterials.Any())
+                    return Json(new { success = false, message = "No puedes eliminar el sitio. Tiene materiales asociados." });
+
+                _context.TblSites.Remove(tblSite);
                 await _context.SaveChangesAsync();
+
                 return Json(new { success = true, message = "Sitio eliminado exitosamente." });
             }
             catch (Exception ex)
             {
-                return Json(new { success = false, message = ex.Message });
+                return Json(new { success = false, message = "Error al eliminar: " + ex.Message });
             }
         }
 

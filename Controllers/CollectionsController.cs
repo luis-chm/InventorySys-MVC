@@ -153,24 +153,30 @@ namespace InventorySys.Controllers
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
             var userRole = GetUserRole();
-
             if (!RolePermissionHelper.CanDelete(userRole, RolePermissionHelper.SystemModule.Collections))
                 return Json(new { success = false, message = "No tienes permiso para eliminar colecciones." });
 
             try
             {
-                var tblCollection = await _context.TblCollections.FindAsync(id);
-                if (tblCollection != null)
-                {
-                    _context.TblCollections.Remove(tblCollection);
-                }
+                var tblCollection = await _context.TblCollections
+                    .Include(c => c.TblMaterials)
+                    .FirstOrDefaultAsync(c => c.CollectionId == id);
 
+                if (tblCollection == null)
+                    return Json(new { success = false, message = "La colección no existe." });
+
+                // Verificar si la colección tiene materiales asociados
+                if (tblCollection.TblMaterials.Any())
+                    return Json(new { success = false, message = "No puedes eliminar la colección. Tiene materiales asociados." });
+
+                _context.TblCollections.Remove(tblCollection);
                 await _context.SaveChangesAsync();
+
                 return Json(new { success = true, message = "Colección eliminada exitosamente." });
             }
             catch (Exception ex)
             {
-                return Json(new { success = false, message = ex.Message });
+                return Json(new { success = false, message = "Error al eliminar: " + ex.Message });
             }
         }
 

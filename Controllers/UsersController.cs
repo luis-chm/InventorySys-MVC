@@ -65,7 +65,12 @@ namespace InventorySys.Controllers
 
             if (!RolePermissionHelper.CanCreate(userRole, RolePermissionHelper.SystemModule.Users))
                 return Json(new { success = false, message = "No tienes permiso para crear usuarios." });
+            // Validar que el email sea unico
+            var emailExists = await _context.TblUsers
+                .AnyAsync(u => u.UserEmail == tblUser.UserEmail);
 
+            if (emailExists)
+                return Json(new { success = false, message = "El email ya está registrado. Por favor, ingresa un email único." });
             if (ModelState.IsValid)
             {
                 try
@@ -102,18 +107,29 @@ namespace InventorySys.Controllers
             ViewBag.RoleId = new SelectList(roles, "RoleId", "RoleName", tblUser.RoleId);
             return PartialView("Edit", tblUser);
         }
-
         // POST: Users/EditModal/5
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> EditModal(int id, [Bind("UserId,UserName,UserEmail,UserEncryptedPassword,RoleId,UserActive")] TblUser tblUser)
         {
             var userRole = GetUserRole();
-
             if (!RolePermissionHelper.CanEdit(userRole, RolePermissionHelper.SystemModule.Users))
                 return Json(new { success = false, message = "No tienes permiso para editar usuarios." });
 
             if (id != tblUser.UserId) return NotFound();
+
+            // Validar que el email sea único (excepto el usuario actual)
+            var emailExists = await _context.TblUsers
+                .AnyAsync(u => u.UserEmail == tblUser.UserEmail && u.UserId != tblUser.UserId);
+
+            if (emailExists)
+                return Json(new { success = false, message = "El email ya está registrado. Por favor, ingresa un email único." });
+
+            if (!ModelState.IsValid)
+            {
+                var errors = ModelState.Values.SelectMany(v => v.Errors);
+                return Json(new { success = false, message = "Error: " + string.Join(", ", errors.Select(e => e.ErrorMessage)) });
+            }
 
             if (ModelState.IsValid)
             {
@@ -131,15 +147,7 @@ namespace InventorySys.Controllers
 
                     _context.Update(tblUser);
                     await _context.SaveChangesAsync();
-
                     return Json(new { success = true, message = "Usuario actualizado exitosamente." });
-                }
-                catch (DbUpdateConcurrencyException)
-                {
-                    if (!TblUserExists(tblUser.UserId))
-                        return NotFound();
-                    else
-                        throw;
                 }
                 catch (Exception ex)
                 {
@@ -147,8 +155,7 @@ namespace InventorySys.Controllers
                 }
             }
 
-            ViewBag.RoleId = new SelectList(_context.TblRoles.Where(r => r.RoleActive == true), "RoleId", "RoleName", tblUser.RoleId);
-            return PartialView("Edit", tblUser);
+            return Json(new { success = false, message = "Error desconocido." });
         }
 
         // GET: Users/DeleteModal/5

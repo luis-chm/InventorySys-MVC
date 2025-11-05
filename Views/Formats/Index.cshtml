@@ -60,7 +60,7 @@
                             <tr>
                                 <td>@item.FormatId</td>
                                 <td>@item.FormatName</td>
-                                <td>@item.FormatSizeCm</td>
+                                <td>@((int)item.FormatSizeCm)</td>
                                 <td class="text-center">
                                     <span class="badge @(item.FormatActive ? "bg-success" : "bg-danger") fs-6">
                                         <i class="bi @(item.FormatActive ? "bi-check-circle" : "bi-x-circle") me-1"></i>

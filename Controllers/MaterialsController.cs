@@ -94,7 +94,12 @@ namespace InventorySys.Controllers
 
             if (!RolePermissionHelper.CanCreate(userRole, RolePermissionHelper.SystemModule.Materials))
                 return Json(new { success = false, message = "No tienes permiso para crear materiales." });
+            //Validar que el MaterialCode sea unico
+            var codeExists = await _context.TblMaterials
+                .AnyAsync(m => m.MaterialCode == model.MaterialCode);
 
+            if (codeExists)
+                return Json(new { success = false, message = "El código de material ya existe. Por favor, ingresa un código único." });
             if (ModelState.IsValid)
             {
                 try
@@ -221,7 +226,12 @@ namespace InventorySys.Controllers
                 return Json(new { success = false, message = "No tienes permiso para editar materiales." });
 
             if (id != model.MaterialId) return NotFound();
+            // Validar que el MaterialCode sea unico (excepto el material actual)
+            var codeExists = await _context.TblMaterials
+                .AnyAsync(m => m.MaterialCode == model.MaterialCode && m.MaterialId != model.MaterialId);
 
+            if (codeExists)
+                return Json(new { success = false, message = "El código de material ya existe. Por favor, ingresa un código único." });
             if (ModelState.IsValid)
             {
                 try
@@ -293,7 +303,6 @@ namespace InventorySys.Controllers
 
             return PartialView("Delete", entity);
         }
-
         [HttpPost, ActionName("DeleteModal")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
@@ -305,18 +314,25 @@ namespace InventorySys.Controllers
 
             try
             {
-                var entity = await _context.TblMaterials.FindAsync(id);
-                if (entity != null)
-                {
-                    _context.TblMaterials.Remove(entity);
-                    await _context.SaveChangesAsync();
-                }
+                var entity = await _context.TblMaterials
+                    .Include(m => m.TblMaterialTransactions)
+                    .FirstOrDefaultAsync(m => m.MaterialId == id);
+
+                if (entity == null)
+                    return Json(new { success = false, message = "El material no existe." });
+
+                // Verificar si el material tiene transacciones asociadas
+                if (entity.TblMaterialTransactions.Any())
+                    return Json(new { success = false, message = "No puedes eliminar el material. Tiene transacciones asociadas." });
+
+                _context.TblMaterials.Remove(entity);
+                await _context.SaveChangesAsync();
 
                 return Json(new { success = true, message = "Material eliminado correctamente." });
             }
             catch (Exception ex)
             {
-                return Json(new { success = false, message = ex.Message });
+                return Json(new { success = false, message = "Error al eliminar: " + ex.Message });
             }
         }
 

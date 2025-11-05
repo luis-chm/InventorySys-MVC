@@ -157,24 +157,30 @@ namespace InventorySys.Controllers
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
             var userRole = GetUserRole();
-
             if (!RolePermissionHelper.CanDelete(userRole, RolePermissionHelper.SystemModule.Finitures))
                 return Json(new { success = false, message = "No tienes permiso para eliminar acabados." });
 
             try
             {
-                var tblFiniture = await _context.TblFinitures.FindAsync(id);
-                if (tblFiniture != null)
-                {
-                    _context.TblFinitures.Remove(tblFiniture);
-                }
+                var tblFiniture = await _context.TblFinitures
+                    .Include(f => f.TblMaterials)
+                    .FirstOrDefaultAsync(f => f.FinitureId == id);
 
+                if (tblFiniture == null)
+                    return Json(new { success = false, message = "El acabado no existe." });
+
+                // Verificar si el acabado tiene materiales asociados
+                if (tblFiniture.TblMaterials.Any())
+                    return Json(new { success = false, message = "No puedes eliminar el acabado. Tiene materiales asociados." });
+
+                _context.TblFinitures.Remove(tblFiniture);
                 await _context.SaveChangesAsync();
+
                 return Json(new { success = true, message = "Acabado eliminado exitosamente." });
             }
             catch (Exception ex)
             {
-                return Json(new { success = false, message = ex.Message });
+                return Json(new { success = false, message = "Error al eliminar: " + ex.Message });
             }
         }
 

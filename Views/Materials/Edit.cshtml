@@ -109,10 +109,8 @@
 <script>
     $('#editMaterialForm').on('submit', function (e) {
         e.preventDefault();
-
         var formData = new FormData(this);
         var token = $('input[name="__RequestVerificationToken"]', this).val();
-
         $.ajax({
             url: '/Materials/EditModal/' + $('[name="MaterialId"]').val(),
             type: 'POST',
@@ -128,7 +126,7 @@
                     reloadPage();
                     alert(response.message);
                 } else {
-                    $('#materialModalContent').html(response);
+                    alert(response.message);
                 }
             },
             error: function (xhr, status, error) {

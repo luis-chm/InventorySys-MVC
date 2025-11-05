@@ -153,24 +153,30 @@ namespace InventorySys.Controllers
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
             var userRole = GetUserRole();
-
             if (!RolePermissionHelper.CanDelete(userRole, RolePermissionHelper.SystemModule.Formats))
                 return Json(new { success = false, message = "No tienes permiso para eliminar formatos." });
 
             try
             {
-                var tblFormat = await _context.TblFormats.FindAsync(id);
-                if (tblFormat != null)
-                {
-                    _context.TblFormats.Remove(tblFormat);
-                }
+                var tblFormat = await _context.TblFormats
+                    .Include(f => f.TblMaterials)
+                    .FirstOrDefaultAsync(f => f.FormatId == id);
 
+                if (tblFormat == null)
+                    return Json(new { success = false, message = "El formato no existe." });
+
+                // Verificar si el formato tiene materiales asociados
+                if (tblFormat.TblMaterials.Any())
+                    return Json(new { success = false, message = "No puedes eliminar el formato. Tiene materiales asociados." });
+
+                _context.TblFormats.Remove(tblFormat);
                 await _context.SaveChangesAsync();
+
                 return Json(new { success = true, message = "Formato eliminado exitosamente." });
             }
             catch (Exception ex)
             {
-                return Json(new { success = false, message = ex.Message });
+                return Json(new { success = false, message = "Error al eliminar: " + ex.Message });
             }
         }
 
