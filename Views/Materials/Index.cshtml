@@ -1,0 +1,214 @@
+﻿@model IEnumerable<InventorySys.Models.TblMaterial>
+
+@{
+    ViewData["Title"] = "Index";
+    var userRole = User.FindFirst(System.Security.Claims.ClaimTypes.Role)?.Value;
+}
+
+<!-- Breadcrumb -->
+<div class="app-content-header">
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-sm-6">
+                <h3 class="mb-0">
+                    <i class="bi bi-box-seam-fill me-2"></i>Materiales
+                </h3>
+            </div>
+            <div class="col-sm-6">
+                <ol class="breadcrumb float-sm-end">
+                    <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">Inicio</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">Materiales</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Content Section -->
+<section class="content">
+    <div class="container-fluid">
+        <!-- Card con sombra -->
+        <div class="card shadow-sm">
+            <div class="card-header bg-white py-3 border-bottom">
+                <div class="row align-items-center">
+                    <div class="col-12">
+                        @if (RolePermissionHelper.CanCreate(userRole, RolePermissionHelper.SystemModule.Materials))
+                        {
+                            <button type="button" class="btn btn-success" onclick="openCreateModal()">
+                                <i class="bi bi-plus-lg"></i> Crear Nuevo
+                            </button>
+                        }
+                    </div>
+                </div>
+            </div>
+
+            <!-- Card Body -->
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-bordered table-striped align-middle dataTables1">
+                        <thead>
+                            <tr>
+                                <th>Imagen</th>
+                                <th>Código</th>
+                                <th>Descripción</th>
+                                <th>Colección</th>
+                                <th>Acabado</th>
+                                <th>Formato</th>
+                                <th>Ubicación</th>
+                                <th>Fecha Ingreso</th>
+                                <th>Stock (MQ)</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var item in Model)
+                            {
+                                <tr>
+                                    <td class="text-center">
+                                        <img src="~/UploadedImages/@item.MaterialImg" class="rounded" width="60" height="60" alt="Sin imagen" />
+                                    </td>
+                                    <td>
+                                        <strong class="text-primary">@item.MaterialCode</strong>
+                                    </td>
+                                    <td>@item.MaterialDescription</td>
+                                    <td class="text-center">
+                                        <span class="badge bg-info">@item.Collection?.CollectionName</span>
+                                    </td>
+                                    <td class="text-center">
+                                        <span class="badge bg-secondary">@item.Finiture?.FinitureName</span>
+                                    </td>
+                                    <td class="text-center">
+                                        <span class="badge bg-dark">@item.Format?.FormatName</span>
+                                    </td>
+                                    <td>
+                                        <i class="bi bi-geo-alt text-muted me-1"></i>@item.Site?.SiteName
+                                    </td>
+                                    <td class="text-center">
+                                        <small class="text-muted fw-bold">
+                                            <i class="bi bi-calendar3 me-1"></i>
+                                            @item.MaterialReceivedDate.ToString("dd/MM/yyyy")
+                                        </small>
+                                    </td>
+                                    <td class="text-center">
+                                        <span class="badge bg-success fs-6">@item.MaterialStock.ToString("N0")</span>
+                                    </td>
+                                    <td>
+                                        <div class="d-flex justify-content-center gap-1">
+                                            @if (RolePermissionHelper.CanEdit(userRole, RolePermissionHelper.SystemModule.Materials))
+                                            {
+                                                <button class="btn btn-sm btn-primary" onclick="openEditModal(@item.MaterialId)">
+                                                    <i class="bi bi-pencil-square"></i> Editar
+                                                </button>
+                                            }
+
+                                            @if (RolePermissionHelper.CanDelete(userRole, RolePermissionHelper.SystemModule.Materials))
+                                            {
+                                                <button class="btn btn-sm btn-danger" onclick="openDeleteModal(@item.MaterialId)">
+                                                    <i class="bi bi-trash3"></i> Eliminar
+                                                </button>
+                                            }
+
+                                            @if (!RolePermissionHelper.CanEdit(userRole, RolePermissionHelper.SystemModule.Materials) &&
+                                                                                    !RolePermissionHelper.CanDelete(userRole, RolePermissionHelper.SystemModule.Materials))
+                                            {
+                                                <span class="text-muted">
+                                                    <i class="bi bi-lock-fill me-1"></i> Sin acceso
+                                                </span>
+                                            }
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+
+                    @if (!Model.Any())
+                    {
+                        <div class="alert alert-info text-center my-4">
+                            <i class="bi bi-info-circle fs-3 d-block mb-2"></i>
+                            <h5>No hay materiales registrados</h5>
+                            <p class="mb-0">Haz clic en "Crear Nuevo" para agregar el primero.</p>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Modal Container -->
+<div class="modal fade" id="materialModal" tabindex="-1" aria-labelledby="materialModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content" id="materialModalContent">
+            <!-- El contenido se cargará aquí dinámicamente -->
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function setupAjaxAntiForgeryToken() {
+            var token = $('input[name="__RequestVerificationToken"]').val();
+
+            if (token) {
+                $.ajaxSetup({
+                    beforeSend: function(xhr, settings) {
+                        if (settings.type === 'POST' && !this.crossDomain) {
+                            xhr.setRequestHeader("RequestVerificationToken", token);
+                        }
+                    }
+                });
+            }
+        }
+
+        $(document).ready(function() {
+            setupAjaxAntiForgeryToken();
+        });
+
+        function openCreateModal() {
+            loadModal('/Materials/CreateModal', 'Crear Material');
+        }
+
+        function openEditModal(id) {
+            loadModal('/Materials/EditModal/' + id, 'Editar Material');
+        }
+
+        function openDeleteModal(id) {
+            loadModal('/Materials/DeleteModal/' + id, 'Eliminar Material');
+        }
+
+        function loadModal(url, title) {
+            $.get(url)
+                .done(function(data) {
+                    $('#materialModalContent').html(data);
+                    var modal = new bootstrap.Modal(document.getElementById('materialModal'));
+                    modal.show();
+                    setupAjaxAntiForgeryToken();
+                })
+                .fail(function(xhr, status, error) {
+                    if (xhr.status === 404) {
+                        return;
+                    }
+                    alert('Error al cargar el modal: ' + error);
+                });
+        }
+
+        function reloadPage() {
+            location.reload();
+        }
+
+        function closeModal() {
+            var modalElement = document.getElementById('materialModal');
+            var modal = bootstrap.Modal.getInstance(modalElement);
+            if (modal) {
+                modal.hide();
+            }
+
+            setTimeout(function() {
+                $('.modal-backdrop').remove();
+                $('body').removeClass('modal-open');
+                $('body').css('padding-right', '');
+            }, 300);
+        }
+    </script>
+}

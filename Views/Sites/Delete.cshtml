@@ -1,0 +1,82 @@
+﻿@model InventorySys.Models.TblSite
+
+@{
+    ViewData["Title"] = "Delete";
+}
+<div class="modal-header bg-danger text-white">
+    <h5 class="modal-title">
+        <i class="bi bi-exclamation-triangle me-2"></i>¿Eliminar Sitio?
+    </h5>
+    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+</div>
+
+<div class="modal-body">
+    <div class="alert alert-warning" role="alert">
+        <i class="bi bi-info-circle me-2"></i>
+        <strong>Advertencia:</strong> Esta acción no se puede deshacer. El sitio será eliminado permanentemente.
+    </div>
+
+    <div class="row g-3">
+        <div class="col-md-6">
+            <label class="form-label fw-semibold"><i class="bi bi-hash me-1"></i>ID del Sitio</label>
+            <div class="info-value bg-light p-3 rounded border">@Html.DisplayFor(model => model.SiteId)</div>
+        </div>
+        <div class="col-md-6">
+            <label class="form-label fw-semibold"><i class="bi bi-geo-alt me-1"></i>Nombre del Sitio</label>
+            <div class="info-value bg-light p-3 rounded border">@Html.DisplayFor(model => model.SiteName)</div>
+        </div>
+        <div class="col-md-6">
+            <label class="form-label fw-semibold"><i class="bi bi-geo me-1"></i>Ubicación</label>
+            <div class="info-value bg-light p-3 rounded border">@Html.DisplayFor(model => model.SiteLocation)</div>
+        </div>
+        <div class="col-md-6">
+            <label class="form-label fw-semibold"><i class="bi bi-toggle-on me-1"></i>Estado</label>
+            <div class="info-value bg-light p-3 rounded border">
+                @if (Model?.SiteActive ?? false)
+                {
+                    <span class="badge bg-success fs-6"><i class="bi bi-check-circle me-1"></i>Activo</span>
+                }
+                else
+                {
+                    <span class="badge bg-danger fs-6"><i class="bi bi-x-circle me-1"></i>Inactivo</span>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal-footer d-flex justify-content-center">
+    <form id="deleteForm" class="d-inline">
+        @Html.AntiForgeryToken()
+        <input type="hidden" asp-for="SiteId" />
+        <button type="submit" class="btn btn-danger me-2"><i class="bi bi-trash me-1"></i>Sí, Eliminar Sitio</button>
+        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal"><i class="bi bi-arrow-left me-1"></i>Cancelar</button>
+    </form>
+</div>
+
+<script>
+    $('#deleteForm').on('submit', function (e) {
+        e.preventDefault();
+
+        $.ajax({
+            url: '/Sites/DeleteModal',
+            type: 'POST',
+            data: {
+                id: $('[name="SiteId"]').val(),
+                __RequestVerificationToken: $('[name="__RequestVerificationToken"]').val()
+            },
+            success: function (response) {
+                if (response.success) {
+                    closeModal();
+                    reloadPage();
+                    alert('Sitio eliminado exitosamente');
+                } else {
+                    alert(response.message || 'Error al eliminar el sitio');
+                }
+            },
+            error: function () {
+                alert('Error al eliminar el sitio');
+            }
+        });
+    });
+</script>

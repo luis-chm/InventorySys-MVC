@@ -1,0 +1,85 @@
+﻿@model InventorySys.Models.TblRole
+
+@{
+    ViewData["Title"] = "Create";
+}
+
+<div class="modal-header bg-success text-white">
+    <h5 class="modal-title">
+        <i class="bi bi-shield-plus me-2"></i>Crear Nuevo Rol
+    </h5>
+    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+</div>
+
+<form id="createForm">
+    @Html.AntiForgeryToken()
+    <div class="modal-body">
+        <div asp-validation-summary="ModelOnly" class="alert alert-danger d-none"></div>
+
+        <div class="row g-3">
+            <!-- Nombre de Rol -->
+            <div class="col-12">
+                <label asp-for="RoleName" class="form-label fw-semibold">
+                    <i class="bi bi-person-badge me-1"></i>Nombre de Rol <span class="text-danger">*</span>
+                </label>
+                <input asp-for="RoleName" class="form-control" placeholder="Ingrese el nombre del rol" required />
+                <span asp-validation-for="RoleName" class="text-danger small"></span>
+            </div>
+
+            <!-- Estado del Rol -->
+            <div class="col-12">
+                <label class="form-label fw-semibold">
+                    <i class="bi bi-toggle-on me-1"></i>Estado del Rol <span class="text-danger">*</span>
+                </label>
+                <div class="mt-2">
+                    <div class="form-check form-check-inline">
+                        <input asp-for="RoleActive" type="radio" value="true" class="form-check-input" id="createActiveTrue" checked required />
+                        <label class="form-check-label text-success fw-semibold" for="createActiveTrue">
+                            <i class="bi bi-check-circle me-1"></i>Activo
+                        </label>
+                    </div>
+                    <div class="form-check form-check-inline">
+                        <input asp-for="RoleActive" type="radio" value="false" class="form-check-input" id="createActiveFalse" required />
+                        <label class="form-check-label text-danger fw-semibold" for="createActiveFalse">
+                            <i class="bi bi-x-circle me-1"></i>Inactivo
+                        </label>
+                    </div>
+                </div>
+                <span asp-validation-for="RoleActive" class="text-danger small"></span>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-footer">
+        <button type="submit" class="btn btn-success">
+            <i class="bi bi-check-circle me-1"></i>Crear Rol
+        </button>
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+            <i class="bi bi-x-circle me-1"></i>Cancelar
+        </button>
+    </div>
+</form>
+
+<script>
+    $('#createForm').on('submit', function(e) {
+        e.preventDefault();
+
+        $.ajax({
+            url: '/Roles/CreateModal',
+            type: 'POST',
+            data: $(this).serialize(),
+            success: function(response) {
+                if (response.success) {
+                    closeModal();
+                    reloadPage();
+                    alert(response.message);
+                } else {
+                    $('#modalContent').html(response);
+                }
+            },
+            error: function() {
+                alert('Error al crear el rol');
+            }
+        });
+    });
+</script>

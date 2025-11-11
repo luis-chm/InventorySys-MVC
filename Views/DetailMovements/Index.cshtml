@@ -1,0 +1,113 @@
+﻿@model IEnumerable<InventorySys.Models.TblDetailMovement>
+
+@{
+    ViewData["Title"] = "Detalles de Transacciones";
+}
+
+<!-- Breadcrumb -->
+<div class="app-content-header">
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-sm-6">
+                <h3 class="mb-0">
+                    <i class="bi bi-list-check me-2"></i>Detalles de Transacciones
+                </h3>
+            </div>
+            <div class="col-sm-6">
+                <ol class="breadcrumb float-sm-end">
+                    <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">Inicio</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">Detalles de Transacciones</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</div>
+
+<section class="content">
+    <div class="container-fluid">
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-bordered table-striped align-middle dataTables1">
+                        <thead>
+                            <tr>
+                                <th>Código Material</th>
+                                <th>Descripción Material</th>
+                                <th>Fecha Transacción</th>
+                                <th>Tipo Transacción</th>
+                                <th>Cantidad Inicial</th>
+                                <th>Cantidad Ingresada</th>
+                                <th>Cantidad Retirada</th>
+                                <th>Cantidad Actual</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var item in Model)
+                            {
+                                <tr>
+                                    <td>
+                                        <strong class="text-primary">@item.MaterialTransaction?.Material?.MaterialCode</strong>
+                                    </td>
+                                    <td>@item.MaterialTransaction?.Material?.MaterialDescription</td>
+                                    <td class="text-center">
+                                        <small class="text-muted fw-bold">
+                                            <i class="bi bi-calendar3 me-1"></i>
+                                            @item.MaterialTransaction?.MaterialTransactionDate.ToString("dd/MM/yyyy")
+                                        </small>
+                                    </td>
+                                    <td class="text-center">
+                                        @{
+                                            var transactionType = item.MaterialTransaction?.MaterialTransactionType?.ToLower();
+                                            var badgeClass = transactionType == "ingreso" ? "bg-success" : "bg-danger";
+                                        }
+                                        <span class="badge @badgeClass">@item.MaterialTransaction?.MaterialTransactionType</span>
+                                    </td>
+                                    <td class="text-center">@Math.Round(item.DetInitBalance ?? 0)</td>
+                                    <td class="text-center">
+                                        <span class="text-success fw-bold">+@Math.Round(item.DetCantEntry ?? 0)</span>
+                                    </td>
+                                    <td class="text-center">
+                                        <span class="text-danger fw-bold">-@Math.Round(item.DetCantExit ?? 0)</span>
+                                    </td>
+                                    <td class="text-center">
+                                        <span class="badge bg-primary fs-6">@Math.Round(item.DetCurrentBalance ?? 0)</span>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+
+                    @if (!Model.Any())
+                    {
+                        <div class="alert alert-info text-center my-4">
+                            <i class="bi bi-info-circle fs-3 d-block mb-2"></i>
+                            <h5>No hay movimientos registrados</h5>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            setupAjaxAntiForgeryToken();
+        });
+
+        function setupAjaxAntiForgeryToken() {
+            var token = $('input[name="__RequestVerificationToken"]').val();
+
+            if (token) {
+                $.ajaxSetup({
+                    beforeSend: function(xhr, settings) {
+                        if (settings.type === 'POST' && !this.crossDomain) {
+                            xhr.setRequestHeader("RequestVerificationToken", token);
+                        }
+                    }
+                });
+            }
+        }
+    </script>
+}

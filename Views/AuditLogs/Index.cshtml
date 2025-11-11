@@ -1,0 +1,172 @@
+﻿@model IEnumerable<InventorySys.Models.TblAuditLog>
+
+@{
+    ViewData["Title"] = "Audit Logs";
+}
+
+<div class="container-fluid mt-5">
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <h1 class="h2">
+                    <i class="fas fa-history text-info"></i> Audit Logs
+                </h1>
+                <div>
+                    <button class="btn btn-secondary btn-sm" onclick="location.reload()">
+                        <i class="fas fa-sync-alt"></i> Actualizar
+                    </button>
+                </div>
+            </div>
+            <small class="text-muted d-block mt-2">
+                <i class="fas fa-shield-alt"></i> Vista restringida a Admin y personal de TI
+            </small>
+        </div>
+    </div>
+
+    <div class="card border-0 shadow-sm">
+        <div class="card-header bg-dark text-white">
+            <h6 class="mb-0">
+                <i class="fas fa-list"></i> Historial de cambios del sistema
+            </h6>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table id="auditLogsTable" class="table table-hover mb-0">
+                    <thead class="table-dark sticky-top">
+                        <tr>
+                            <th>
+                                <i class="fas fa-key"></i> ID Registro
+                            </th>
+                            <th>
+                                <i class="fas fa-database"></i> Tabla
+                            </th>
+                            <th>
+                                <i class="fas fa-exchange-alt"></i> Operación
+                            </th>
+                            <th>
+                                <i class="fas fa-clock"></i> Fecha/Hora
+                            </th>
+                            <th>
+                                <i class="fas fa-undo"></i> Valores Antiguos
+                            </th>
+                            <th>
+                                <i class="fas fa-redo"></i> Valores Nuevos
+                            </th>
+                            <th>
+                                <i class="fas fa-user"></i> Usuario
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in Model)
+                        {
+                            <tr class="align-middle">
+                                <td>
+                                    <code>@item.RecordId</code>
+                                </td>
+                                <td>
+                                    <span class="badge bg-info">@item.TableName</span>
+                                </td>
+                                <td>
+                                    @{
+                                        var operationBadgeClass = item.Operation switch
+                                        {
+                                            "CREATE" => "bg-success",
+                                            "UPDATE" => "bg-warning text-dark",
+                                            "DELETE" => "bg-danger",
+                                            _ => "bg-secondary"
+                                        };
+                                    }
+                                    <span class="badge @operationBadgeClass">@item.Operation</span>
+                                </td>
+                                <td>
+                                    <small class="text-muted">
+                                        @item.OperationDateTime.ToString("dd/MM/yyyy HH:mm:ss")
+                                    </small>
+                                </td>
+                                <td>
+                                    @if (!string.IsNullOrEmpty(item.OldValues))
+                                    {
+                                        <button class="btn btn-xs btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#modalOldValues_@item.AuditLogId">
+                                            Ver
+                                        </button>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted">-</span>
+                                    }
+                                </td>
+                                <td>
+                                    @if (!string.IsNullOrEmpty(item.NewValues))
+                                    {
+                                        <button class="btn btn-xs btn-outline-primary" data-bs-toggle="modal" data-bs-target="#modalNewValues_@item.AuditLogId">
+                                            Ver
+                                        </button>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted">-</span>
+                                    }
+                                </td>
+                                <td>
+                                    <span class="badge bg-dark">@item.User?.UserName</span>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modales para ver valores -->
+@foreach (var item in Model)
+{
+    <!-- Modal Valores Antiguos -->
+    <div class="modal fade" id="modalOldValues_@item.AuditLogId" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header bg-warning text-dark">
+                    <h5 class="modal-title">Valores Antiguos - @item.TableName</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <pre class="bg-light p-3 rounded"><code>@item.OldValues</code></pre>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Valores Nuevos -->
+    <div class="modal fade" id="modalNewValues_@item.AuditLogId" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title">Valores Nuevos - @item.TableName</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <pre class="bg-light p-3 rounded"><code>@item.NewValues</code></pre>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@section Scripts {
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            $('#auditLogsTable').DataTable({
+                language: {
+                    url: '//cdn.datatables.net/plug-ins/1.10.24/i18n/Spanish.json'
+                },
+                pageLength: 25,
+                order: [[3, 'desc']],
+                columnDefs: [
+                    { orderable: false, targets: [4, 5] }
+                ]
+            });
+        });
+    </script>
+}

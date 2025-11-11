@@ -1,0 +1,95 @@
+﻿@model InventorySys.Models.TblFiniture
+
+@{
+    ViewData["Title"] = "Edit";
+}
+<div class="modal-header bg-primary text-white">
+    <h5 class="modal-title">
+        <i class="bi bi-pencil-square me-2"></i>Editar Acabado
+    </h5>
+    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+</div>
+
+<form id="editForm">
+    @Html.AntiForgeryToken()
+    <input type="hidden" asp-for="FinitureId" />
+
+    <div class="modal-body">
+        <div asp-validation-summary="ModelOnly" class="alert alert-danger d-none"></div>
+
+        <div class="row g-3">
+            <!-- Código de Acabado -->
+            <div class="col-12">
+                <label asp-for="FinitureCode" class="form-label fw-semibold">
+                    <i class="bi bi-hash me-1"></i>Código del Acabado <span class="text-danger">*</span>
+                </label>
+                <input asp-for="FinitureCode" class="form-control" placeholder="Ejemplo: F001" required />
+                <span asp-validation-for="FinitureCode" class="text-danger small"></span>
+            </div>
+
+            <!-- Nombre de Acabado -->
+            <div class="col-12">
+                <label asp-for="FinitureName" class="form-label fw-semibold">
+                    <i class="bi bi-pencil-square me-1"></i>Nombre del Acabado <span class="text-danger">*</span>
+                </label>
+                <input asp-for="FinitureName" class="form-control" placeholder="Ejemplo: Brillante Blanco" required />
+                <span asp-validation-for="FinitureName" class="text-danger small"></span>
+            </div>
+
+            <!-- Estado -->
+            <div class="col-12">
+                <label class="form-label fw-semibold">
+                    <i class="bi bi-toggle-on me-1"></i>Estado del Acabado <span class="text-danger">*</span>
+                </label>
+                <div class="mt-2">
+                    <div class="form-check form-check-inline">
+                        <input asp-for="FinitureActive" type="radio" value="true" class="form-check-input" id="editActiveTrue" required />
+                        <label class="form-check-label text-success fw-semibold" for="editActiveTrue">
+                            <i class="bi bi-check-circle me-1"></i>Activo
+                        </label>
+                    </div>
+                    <div class="form-check form-check-inline">
+                        <input asp-for="FinitureActive" type="radio" value="false" class="form-check-input" id="editActiveFalse" required />
+                        <label class="form-check-label text-danger fw-semibold" for="editActiveFalse">
+                            <i class="bi bi-x-circle me-1"></i>Inactivo
+                        </label>
+                    </div>
+                </div>
+                <span asp-validation-for="FinitureActive" class="text-danger small"></span>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-footer">
+        <button type="submit" class="btn btn-primary">
+            <i class="bi bi-check-circle me-1"></i>Actualizar Acabado
+        </button>
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+            <i class="bi bi-x-circle me-1"></i>Cancelar
+        </button>
+    </div>
+</form>
+
+<script>
+    $('#editForm').on('submit', function (e) {
+        e.preventDefault();
+
+        $.ajax({
+            url: '/Finitures/EditModal/' + $('[name="FinitureId"]').val(),
+            type: 'POST',
+            data: $(this).serialize(),
+            success: function (response) {
+                if (response.success) {
+                    closeModal();
+                    reloadPage();
+                    alert(response.message);
+                } else {
+                    $('#modalContent').html(response);
+                }
+            },
+            error: function () {
+                alert('Error al actualizar el acabado');
+            }
+        });
+    });
+</script>

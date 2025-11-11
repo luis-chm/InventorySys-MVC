@@ -1,0 +1,129 @@
+﻿@model InventorySys.ViewModels.MaterialViewModel
+
+@{
+    ViewData["Title"] = "Create";
+}
+
+<div class="modal-header bg-success text-white">
+    <h5 class="modal-title">
+        <i class="bi bi-plus-square me-2"></i>Crear Material
+    </h5>
+    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+</div>
+
+<form id="createMaterialForm" enctype="multipart/form-data">
+    @Html.AntiForgeryToken()
+
+    <div class="modal-body">
+        <div asp-validation-summary="ModelOnly" class="alert alert-danger d-none"></div>
+
+        <div class="row g-3">
+            <!-- Código de Material -->
+            <div class="col-md-6">
+                <label asp-for="MaterialCode" class="form-label fw-semibold">Código de Material <span class="text-danger">*</span></label>
+                <input asp-for="MaterialCode" class="form-control" placeholder="Ingrese código" required />
+                <span asp-validation-for="MaterialCode" class="text-danger small"></span>
+            </div>
+
+            <!-- Descripción -->
+            <div class="col-md-6">
+                <label asp-for="MaterialDescription" class="form-label fw-semibold">Descripción <span class="text-danger">*</span></label>
+                <input asp-for="MaterialDescription" class="form-control" placeholder="Ingrese descripción" required />
+                <span asp-validation-for="MaterialDescription" class="text-danger small"></span>
+            </div>
+
+            <!-- Colección -->
+            <div class="col-md-6">
+                <label asp-for="CollectionId" class="form-label fw-semibold">Colección</label>
+                <select asp-for="CollectionId" class="form-select" asp-items="ViewBag.CollectionId" required>
+                </select>
+                <span asp-validation-for="CollectionId" class="text-danger small"></span>
+            </div>
+
+            <!-- Acabado -->
+            <div class="col-md-6">
+                <label asp-for="FinitureId" class="form-label fw-semibold">Acabado</label>
+                <select asp-for="FinitureId" class="form-select" asp-items="ViewBag.FinitureId" required>
+                </select>
+                <span asp-validation-for="FinitureId" class="text-danger small"></span>
+            </div>
+
+            <!-- Formato -->
+            <div class="col-md-6">
+                <label asp-for="FormatId" class="form-label fw-semibold">Formato</label>
+                <select asp-for="FormatId" class="form-select" asp-items="ViewBag.FormatId" required>
+                </select>
+                <span asp-validation-for="FormatId" class="text-danger small"></span>
+            </div>
+
+            <!-- Sitio -->
+            <div class="col-md-6">
+                <label asp-for="SiteId" class="form-label fw-semibold">Sitio</label>
+                <select asp-for="SiteId" class="form-select" asp-items="ViewBag.SiteId" required>
+                </select>
+                <span asp-validation-for="SiteId" class="text-danger small"></span>
+            </div>
+
+            <!-- Fecha de Arribo -->
+            <div class="col-md-6">
+                <label asp-for="MaterialReceivedDate" class="form-label fw-semibold">Fecha de Arribo <span class="text-danger">*</span></label>
+                <input asp-for="MaterialReceivedDate" class="form-control" type="date" required />
+                <span asp-validation-for="MaterialReceivedDate" class="text-danger small"></span>
+            </div>
+
+            <!-- Stock -->
+            <div class="col-md-6">
+                <label asp-for="MaterialStock" class="form-label fw-semibold">Stock <span class="text-danger">*</span></label>
+                <input asp-for="MaterialStock" class="form-control" type="number" min="1" step="1" required />
+                <span asp-validation-for="MaterialStock" class="text-danger small"></span>
+            </div>
+
+            <!-- Imagen -->
+            <div class="col-md-12">
+                <label asp-for="MaterialFile" class="form-label fw-semibold">Imagen</label>
+                <input asp-for="MaterialFile" type="file" class="form-control" accept="image/*" />
+                <span asp-validation-for="MaterialFile" class="text-danger small"></span>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-footer">
+        <button type="submit" class="btn btn-success">
+            <i class="bi bi-check-circle me-1"></i>Crear Material
+        </button>
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+            <i class="bi bi-x-circle me-1"></i>Cancelar
+        </button>
+    </div>
+</form>
+
+<script>
+        $('#createMaterialForm').on('submit', function (e) {
+        e.preventDefault();
+        var formData = new FormData(this);
+        var token = $('input[name="__RequestVerificationToken"]', this).val();
+        $.ajax({
+            url: '/Materials/CreateModal',
+            type: 'POST',
+            data: formData,
+            processData: false,
+            contentType: false,
+            headers: {
+                'X-CSRF-TOKEN': token
+            },
+            success: function (response) {
+                if (response.success) {
+                    closeModal();
+                    reloadPage();
+                    alert(response.message);
+                } else {
+                    alert(response.message);
+                }
+            },
+            error: function (xhr, status, error) {
+                console.error('Error:', error);
+                alert('Error al crear el material');
+            }
+        });
+    });
+</script>

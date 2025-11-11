@@ -1,0 +1,121 @@
+﻿@model InventorySys.Models.TblFormat
+
+@{
+    ViewData["Title"] = "Delete";
+}
+
+<div class="modal-header bg-danger text-white">
+    <h5 class="modal-title">
+        <i class="bi bi-exclamation-triangle me-2"></i>¿Eliminar Formato?
+    </h5>
+    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+</div>
+
+<div class="modal-body">
+    <div class="alert alert-warning" role="alert">
+        <i class="bi bi-info-circle me-2"></i>
+        <strong>Advertencia:</strong> Esta acción no se puede deshacer. El formato será eliminado permanentemente del sistema.
+    </div>
+
+    <div class="row g-3">
+        <!-- ID del Formato -->
+        <div class="col-md-6">
+            <div class="info-item">
+                <label class="form-label fw-semibold">
+                    <i class="bi bi-hash me-1"></i>ID del Formato
+                </label>
+                <div class="info-value bg-light p-3 rounded border">
+                    @Html.DisplayFor(model => model.FormatId)
+                </div>
+            </div>
+        </div>
+
+        <!-- Nombre del Formato -->
+        <div class="col-md-6">
+            <div class="info-item">
+                <label class="form-label fw-semibold">
+                    <i class="bi bi-aspect-ratio me-1"></i>Nombre del Formato
+                </label>
+                <div class="info-value bg-light p-3 rounded border">
+                    @Html.DisplayFor(model => model.FormatName)
+                </div>
+            </div>
+        </div>
+
+        <!-- Tamaño (cm) -->
+        <div class="col-md-6">
+            <div class="info-item">
+                <label class="form-label fw-semibold">
+                    <i class="bi bi-arrows-fullscreen me-1"></i>Tamaño (cm)
+                </label>
+                <div class="info-value bg-light p-3 rounded border">
+                    @Html.DisplayFor(model => model.FormatSizeCm)
+                </div>
+            </div>
+        </div>
+
+        <!-- Estado -->
+        <div class="col-md-6">
+            <div class="info-item">
+                <label class="form-label fw-semibold">
+                    <i class="bi bi-toggle-on me-1"></i>Estado
+                </label>
+                <div class="info-value bg-light p-3 rounded border">
+                    @if (Model?.FormatActive ?? false)
+                    {
+                        <span class="badge bg-success fs-6">
+                            <i class="bi bi-check-circle me-1"></i>Activo
+                        </span>
+                    }
+                    else
+                    {
+                        <span class="badge bg-danger fs-6">
+                            <i class="bi bi-x-circle me-1"></i>Inactivo
+                        </span>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal-footer d-flex justify-content-center">
+    <form id="deleteForm" class="d-inline">
+        @Html.AntiForgeryToken()
+        <input type="hidden" asp-for="FormatId" />
+
+        <button type="submit" class="btn btn-danger me-2">
+            <i class="bi bi-trash me-1"></i>Sí, Eliminar Formato
+        </button>
+        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
+            <i class="bi bi-arrow-left me-1"></i>Cancelar
+        </button>
+    </form>
+</div>
+
+<script>
+    $('#deleteForm').on('submit', function (e) {
+        e.preventDefault();
+
+        $.ajax({
+            url: '/Formats/DeleteModal',
+            type: 'POST',
+            data: {
+                id: $('[name="FormatId"]').val(),
+                __RequestVerificationToken: $('[name="__RequestVerificationToken"]').val()
+            },
+            success: function (response) {
+                if (response.success) {
+                    closeModal();
+                    reloadPage();
+                    alert('Formato eliminado exitosamente');
+                } else {
+                    alert(response.message || 'Error al eliminar el formato');
+                }
+            },
+            error: function () {
+                alert('Error al eliminar el formato');
+            }
+        });
+    });
+</script>

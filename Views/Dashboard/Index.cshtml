@@ -1,0 +1,305 @@
+﻿@{
+    ViewData["Title"] = "Dashboard";
+    var dashboard = ViewData.Model as Dictionary<string, object>;
+}
+
+<!-- Encabezado -->
+<div class="app-content-header">
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-sm-6">
+            </div>
+            <div class="col-sm-6">
+                <ol class="breadcrumb float-sm-end">
+                    <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">Inicio</a></li>
+                    <li class="breadcrumb-item active">Dashboard</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container-fluid">
+    <!-- Sección de bienvenida -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="alert alert-secondary border-0 shadow-sm">
+                <div class="row align-items-center">
+                    <div class="col-md-8">
+                        <h4 class="alert-heading mb-2">
+                            <i class="bi bi-speedometer2 me-2"></i>Dashboard de Inventario de Porcelanato
+                        </h4>
+                        <p class="mb-1">
+                            <i class="bi bi-calendar-event me-2"></i>
+                            <span id="fechaActual"></span>
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    @if (dashboard != null)
+    {
+        <!-- Tarjetas de Estadísticas -->
+        <div class="row mb-4">
+            <!-- Total Materiales - Azul -->
+            <div class="col-md-3 col-sm-6 col-12">
+                <div class="info-box" style="background-color: #2c5282;">
+                    <span class="info-box-icon text-white">
+                        <i class="bi bi-boxes"></i>
+                    </span>
+                    <div class="info-box-content">
+                        <span class="info-box-text text-white">Total Materiales</span>
+                        <span class="info-box-number text-white">@(dashboard["TotalMateriales"])</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Stock Total - Verde -->
+            <div class="col-md-3 col-sm-6 col-12">
+                <div class="info-box" style="background-color: #2d5016;">
+                    <span class="info-box-icon text-white">
+                        <i class="bi bi-archive"></i>
+                    </span>
+                    <div class="info-box-content">
+                        <span class="info-box-text text-white">Stock Total</span>
+                        <span class="info-box-number text-white">@(Math.Round(Convert.ToDecimal(dashboard["StockTotal"])))</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Total Transacciones - Naranja -->
+            <div class="col-md-3 col-sm-6 col-12">
+                <div class="info-box" style="background-color: #9c4221;">
+                    <span class="info-box-icon text-white">
+                        <i class="bi bi-arrow-left-right"></i>
+                    </span>
+                    <div class="info-box-content">
+                        <span class="info-box-text text-white">Total Transacciones</span>
+                        <span class="info-box-number text-white">@(dashboard["TotalTransacciones"])</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Usuarios Registrados - Rojo -->
+            <div class="col-md-3 col-sm-6 col-12">
+                <div class="info-box" style="background-color: #9b2c2c;">
+                    <span class="info-box-icon text-white">
+                        <i class="bi bi-people"></i>
+                    </span>
+                    <div class="info-box-content">
+                        <span class="info-box-text text-white">Usuarios Registrados</span>
+                        <span class="info-box-number text-white">@(dashboard["UsuariosRegistrados"])</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Segunda Fila de Tarjetas -->
+        <div class="row mb-4">
+            <!-- Colecciones Activas - Púrpura -->
+            <div class="col-md-3 col-sm-6 col-12">
+                <div class="info-box" style="background-color: #5a3a7a;">
+                    <span class="info-box-icon text-white">
+                        <i class="bi bi-collection"></i>
+                    </span>
+                    <div class="info-box-content">
+                        <span class="info-box-text text-white">Colecciones Activas</span>
+                        <span class="info-box-number text-white">@(dashboard["ColeccionesActivas"])</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sitios Activos - Gris Azulado -->
+            <div class="col-md-3 col-sm-6 col-12">
+                <div class="info-box" style="background-color: #4a5568;">
+                    <span class="info-box-icon text-white">
+                        <i class="bi bi-geo-alt"></i>
+                    </span>
+                    <div class="info-box-content">
+                        <span class="info-box-text text-white">Sitios Activos</span>
+                        <span class="info-box-number text-white">@(dashboard["SitiosActivos"])</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Formatos Activos - Verde Azulado -->
+            <div class="col-md-3 col-sm-6 col-12">
+                <div class="info-box" style="background-color: #2d5a5a;">
+                    <span class="info-box-icon text-white">
+                        <i class="bi bi-layout-three-columns"></i>
+                    </span>
+                    <div class="info-box-content">
+                        <span class="info-box-text text-white">Formatos Activos</span>
+                        <span class="info-box-number text-white">@(dashboard["FormatosActivos"])</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Acabados Activos - Marrón -->
+            <div class="col-md-3 col-sm-6 col-12">
+                <div class="info-box" style="background-color: #6b5344;">
+                    <span class="info-box-icon text-white">
+                        <i class="bi bi-stars"></i>
+                    </span>
+                    <div class="info-box-content">
+                        <span class="info-box-text text-white">Acabados Activos</span>
+                        <span class="info-box-number text-white">@(dashboard["AcabadosActivos"])</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Stock Crítico y Transacciones Recientes -->
+        <div class="row mb-4">
+            <!-- Stock Crítico -->
+            <div class="col-md-6">
+                <div class="card shadow-sm">
+                    <div class="card-header bg-danger text-white">
+                        <h5 class="mb-0">
+                            <i class="bi bi-exclamation-triangle me-2"></i>Stock Crítico
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-sm table-striped" id="criticalStockTable">
+                                <thead>
+                                    <tr>
+                                        <th>Código</th>
+                                        <th>Descripción</th>
+                                        <th>Stock</th>
+                                        <th>Estado</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td colspan="4" class="text-center">
+                                            <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                                            Cargando...
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Transacciones Recientes -->
+            <div class="col-md-6">
+                <div class="card shadow-sm">
+                    <div class="card-header bg-dark text-white">
+                        <h5 class="mb-0">
+                            <i class="bi bi-clock-history me-2"></i>Transacciones Recientes
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-sm table-striped" id="recentTransactionsTable">
+                                <thead>
+                                    <tr>
+                                        <th>Material</th>
+                                        <th>Tipo</th>
+                                        <th>Cantidad</th>
+                                        <th>Usuario</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td colspan="4" class="text-center">
+                                            <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                                            Cargando...
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="alert alert-danger">
+            No hay datos disponibles
+        </div>
+    }
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            // Mostrar fecha actual
+            var hoy = new Date();
+            var opciones = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+            $('#fechaActual').text(hoy.toLocaleDateString('es-ES', opciones));
+
+            // Cargar datos al iniciar
+            loadCriticalStock();
+            loadRecentTransactions();
+
+            // Refrescar cada 30 segundos
+            setInterval(loadCriticalStock, 30000);
+            setInterval(loadRecentTransactions, 30000);
+        });
+
+        function loadCriticalStock() {
+            $.ajax({
+                url: '/Dashboard/GetCriticalStock',
+                type: 'GET',
+                dataType: 'json',
+                success: function(response) {
+                    if (response.success && response.data) {
+                        var html = '';
+                        if (response.data.length > 0) {
+                            response.data.forEach(function(item) {
+                                var bgColor = item.stockStatus === 'SIN STOCK' ? 'red' :
+                                            item.stockStatus === 'CRÍTICO' ? 'orange' : 'yellow';
+                                html += `<tr>
+                                    <td><strong>${item.materialCode}</strong></td>
+                                    <td>${item.materialDescription}</td>
+                                    <td><span class="badge" style="background-color: ${bgColor}; color: black;">${Math.round(item.materialStock)}</span></td>
+                                    <td><span class="badge" style="background-color: ${bgColor}; color: black;">${item.stockStatus}</span></td>
+                                </tr>`;
+                            });
+                        } else {
+                            html = '<tr><td colspan="4" class="text-center text-success"><i class="bi bi-check-circle"></i> Todo el stock está en buen estado</td></tr>';
+                        }
+                        $('#criticalStockTable tbody').html(html);
+                    }
+                },
+                error: function() {
+                    $('#criticalStockTable tbody').html('<tr><td colspan="4" class="text-center text-danger">Error al cargar datos</td></tr>');
+                }
+            });
+        }
+
+        function loadRecentTransactions() {
+            $.ajax({
+                url: '/Dashboard/GetRecentTransactions?take=10',
+                type: 'GET',
+                dataType: 'json',
+                success: function(response) {
+                    if (response.success && response.data) {
+                        var html = '';
+                        response.data.forEach(function(item) {
+                            var badgeClass = item.materialTransactionType === 'Ingreso' ? 'bg-success' : 'bg-danger';
+                            html += `<tr>
+                                <td><strong>${item.materialCode}</strong></td>
+                                <td><span class="badge ${badgeClass}">${item.materialTransactionType}</span></td>
+                                <td>${Math.round(item.materialTransactionQuantity)}</td>
+                                <td><small>${item.userName}</small></td>
+                            </tr>`;
+                        });
+                        $('#recentTransactionsTable tbody').html(html);
+                    }
+                },
+                error: function() {
+                    $('#recentTransactionsTable tbody').html('<tr><td colspan="4" class="text-center text-danger">Error al cargar datos</td></tr>');
+                }
+            });
+        }
+    </script>
+}

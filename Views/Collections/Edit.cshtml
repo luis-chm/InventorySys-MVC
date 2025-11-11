@@ -1,0 +1,95 @@
+﻿@model InventorySys.Models.TblCollection
+
+@{
+    ViewData["Title"] = "Edit";
+}
+
+<div class="modal-header bg-primary text-white">
+    <h5 class="modal-title">
+        <i class="bi bi-pencil-square me-2"></i>Editar Colección
+    </h5>
+    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+</div>
+
+<form id="editForm">
+    @Html.AntiForgeryToken()
+    <input type="hidden" asp-for="CollectionId" />
+
+    <div class="modal-body">
+        <div asp-validation-summary="ModelOnly" class="alert alert-danger d-none"></div>
+
+        <div class="row g-3">
+            <!-- Nombre de Colección -->
+            <div class="col-12">
+                <label asp-for="CollectionName" class="form-label fw-semibold">
+                    <i class="bi bi-collection me-1"></i>Nombre de Colección <span class="text-danger">*</span>
+                </label>
+                <input asp-for="CollectionName" class="form-control" placeholder="Ingrese el nombre de la colección" required />
+                <span asp-validation-for="CollectionName" class="text-danger small"></span>
+            </div>
+
+            <!-- Efecto de Colección -->
+            <div class="col-12">
+                <label asp-for="CollectionEffect" class="form-label fw-semibold">
+                    <i class="bi bi-stars me-1"></i>Efecto de Colección <span class="text-danger">*</span>
+                </label>
+                <input asp-for="CollectionEffect" class="form-control" placeholder="Ingrese el efecto de la colección" required />
+                <span asp-validation-for="CollectionEffect" class="text-danger small"></span>
+            </div>
+
+            <!-- Estado de Colección -->
+            <div class="col-12">
+                <label class="form-label fw-semibold">
+                    <i class="bi bi-toggle-on me-1"></i>Estado de Colección <span class="text-danger">*</span>
+                </label>
+                <div class="mt-2">
+                    <div class="form-check form-check-inline">
+                        <input asp-for="CollectionActive" type="radio" value="true" class="form-check-input" id="editActiveTrue" required />
+                        <label class="form-check-label text-success fw-semibold" for="editActiveTrue">
+                            <i class="bi bi-check-circle me-1"></i>Activo
+                        </label>
+                    </div>
+                    <div class="form-check form-check-inline">
+                        <input asp-for="CollectionActive" type="radio" value="false" class="form-check-input" id="editActiveFalse" required />
+                        <label class="form-check-label text-danger fw-semibold" for="editActiveFalse">
+                            <i class="bi bi-x-circle me-1"></i>Inactivo
+                        </label>
+                    </div>
+                </div>
+                <span asp-validation-for="CollectionActive" class="text-danger small"></span>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-footer">
+        <button type="submit" class="btn btn-primary">
+            <i class="bi bi-check-circle me-1"></i>Actualizar Colección
+        </button>
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+            <i class="bi bi-x-circle me-1"></i>Cancelar
+        </button>
+    </div>
+</form>
+<script>
+    $('#editForm').on('submit', function(e) {
+        e.preventDefault();
+
+        $.ajax({
+            url: '/Collections/EditModal/' + $('[name="CollectionId"]').val(),
+            type: 'POST',
+            data: $(this).serialize(),
+            success: function(response) {
+                if (response.success) {
+                    closeModal();
+                    reloadPage();
+                    alert(response.message);
+                } else {
+                    $('#modalContent').html(response);
+                }
+            },
+            error: function() {
+                alert('Error al actualizar la colección');
+            }
+        });
+    });
+</script>

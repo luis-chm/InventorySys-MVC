@@ -1,0 +1,94 @@
+﻿@model InventorySys.Models.TblMaterialTransaction
+
+@{
+    ViewData["Title"] = "Delete";
+}
+
+<div class="modal-header bg-danger text-white">
+    <h5 class="modal-title">
+        <i class="bi bi-exclamation-triangle me-2"></i>¿Eliminar Transacción?
+    </h5>
+    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+</div>
+
+<div class="modal-body">
+    <div class="alert alert-warning" role="alert">
+        <i class="bi bi-info-circle me-2"></i>
+        <strong>Advertencia:</strong> Esta acción no se puede deshacer. La transacción será eliminada permanentemente del sistema.
+    </div>
+
+    <div class="row g-2">
+        <div class="col-md-6">
+            <label class="form-label fw-semibold small">Código Material</label>
+            <div class="bg-light p-2 rounded">@Model.Material?.MaterialCode</div>
+        </div>
+
+        <div class="col-md-6">
+            <label class="form-label fw-semibold small">Descripción Material</label>
+            <div class="bg-light p-2 rounded">@Model.Material?.MaterialDescription</div>
+        </div>
+
+        <div class="col-md-6">
+            <label class="form-label fw-semibold small">Tipo Transacción</label>
+            <div class="bg-light p-2 rounded">
+                @{
+                    var transactionType = Model.MaterialTransactionType?.ToLower();
+                    var badgeClass = transactionType?.Contains("ingreso") == true ? "bg-success" : "bg-danger";
+                }
+                <span class="badge @badgeClass">@Model.MaterialTransactionType</span>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <label class="form-label fw-semibold small">Cantidad</label>
+            <div class="bg-light p-2 rounded">@Model.MaterialTransactionQuantity.ToString("N0")</div>
+        </div>
+
+        <div class="col-md-6">
+            <label class="form-label fw-semibold small">Fecha Transacción</label>
+            <div class="bg-light p-2 rounded">@Model.MaterialTransactionDate.ToString("dd/MM/yyyy")</div>
+        </div>
+
+    </div>
+</div>
+
+<div class="modal-footer">
+    <form id="deleteForm" class="d-inline">
+        @Html.AntiForgeryToken()
+        <input type="hidden" asp-for="MaterialTransactionId" />
+
+        <button type="submit" class="btn btn-danger btn-sm">
+            <i class="bi bi-trash me-1"></i>Eliminar
+        </button>
+        <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-dismiss="modal">
+            <i class="bi bi-x me-1"></i>Cancelar
+        </button>
+    </form>
+</div>
+
+<script>
+    $('#deleteForm').on('submit', function (e) {
+        e.preventDefault();
+
+        $.ajax({
+            url: '/MaterialTransactions/DeleteModal',
+            type: 'POST',
+            data: {
+                id: $('[name="MaterialTransactionId"]').val(),
+                __RequestVerificationToken: $('[name="__RequestVerificationToken"]').val()
+            },
+            success: function (response) {
+                if (response.success) {
+                    closeModal();
+                    reloadPage();
+                    alert('Transacción eliminada exitosamente');
+                } else {
+                    alert(response.message || 'Error al eliminar la transacción');
+                }
+            },
+            error: function () {
+                alert('Error al eliminar la transacción');
+            }
+        });
+    });
+</script>

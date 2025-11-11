@@ -1,11 +1,508 @@
-﻿<!DOCTYPE html>
+﻿@using InventorySys.Helpers;
+
+@{
+    var userRole = User.FindFirst(System.Security.Claims.ClaimTypes.Role)?.Value;
+}
+<!DOCTYPE html>
 <html lang="en">
-    <head>
-        <meta charset="utf-8" />
-        <title></title>
-        <link href="/css/site.css" rel="stylesheet" type="text/css" />
-    </head>
-    <body>
-        @RenderBody()
-    </body>
+<!--begin::Head-->
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <title>@ViewData["Title"] - Inventory System</title>
+    <!--begin::Primary Meta Tags-->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="title" content="Inventory System">
+    <meta name="author" content="Grupo #1">
+    <meta name="description" content="Sistema de inventario para la solucion de una empresa de porcelanato.">
+
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Source+Sans+Pro:wght@300;400;700&display=swap">
+    <!--end::Fonts-->
+    <!--begin::Third Party Plugin(OverlayScrollbars)-->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/overlayscrollbars@2.3.0/styles/overlayscrollbars.min.css" integrity="sha256-dSokZseQNT08wYEWiz5iLI8QPlKxG+TswNRD8k35cpg=" crossorigin="anonymous">
+    <!--end::Third Party Plugin(OverlayScrollbars)-->
+    <!--begin::Third Party Plugin(Bootstrap Icons)-->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.min.css" integrity="sha256-Qsx5lrStHZyR9REqhUF8iQt73X06c8LGIUPzpOhwRrI=" crossorigin="anonymous">
+    <!--end::Third Party Plugin(Bootstrap Icons)-->
+    <!--begin::Required Plugin(AdminLTE)-->
+    <link rel="stylesheet" href="~/Content/dist/css/adminlte.css">
+    <!--end::Required Plugin(AdminLTE)-->
+    <!-- apexcharts -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/apexcharts@3.37.1/dist/apexcharts.css" integrity="sha256-4MX+61mt9NVvvuPjUWdUdyfZfxSB1/Rf9WtqRHgG5S0=" crossorigin="anonymous">
+
+    <!-- jsvectormap -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsvectormap@1.5.3/dist/css/jsvectormap.min.css" integrity="sha256-+uGLJmmTKOqBr+2E6KDYs/NRsHxSkONXFHUL0fy2O/4=" crossorigin="anonymous">
+
+    <!-- Enlaces a DataTables y jQuery -->
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.11.5/css/jquery.dataTables.css">
+    <!-- token antifalsificación: -->
+    @Html.AntiForgeryToken()
+    <!-- AGREGAR ESTAS LÍNEAS: -->
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/buttons/2.4.2/css/buttons.dataTables.min.css">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <!-- Bootstrap -->
+    <!-- Custom CSS for smooth animations -->
+    <style>
+        .collapse {
+            transition: height 0.35s ease;
+        }
+
+        .sidebar-menu .nav-item ul.collapse {
+            margin-left: 0;
+            padding-left: 1rem;
+        }
+
+            .sidebar-menu .nav-item ul.collapse .nav-link {
+                padding-left: 2.5rem;
+            }
+    </style>
+
+    @await RenderSectionAsync("Styles", required: false)
+</head>
+<!--end::Head-->
+<!--begin::Body-->
+<body class="layout-fixed sidebar-expand-lg bg-body-tertiary">
+    <!--begin::App Wrapper-->
+    <div class="app-wrapper">
+        <!--begin::Header-->
+        <nav class="app-header navbar navbar-expand bg-body">
+            <!--begin::Container-->
+            <div class="container-fluid">
+                <!--begin::Start Navbar Links-->
+                <ul class="navbar-nav">
+                    <li class="nav-item"><a class="nav-link" data-lte-toggle="sidebar" href="#" role="button"><i class="bi bi-list"></i></a></li>
+                    <li class="nav-item d-none d-md-block"><a href="#" class="nav-link"></a></li>
+                    <li class="nav-item d-none d-md-block"><a href="#" class="nav-link"></a></li>
+                </ul>
+                <!--end::Start Navbar Links-->
+                <!--begin::End Navbar Links-->
+                <ul class="navbar-nav ms-auto ms-md-0 me-3 me-lg-4">
+                    @if (User.Identity.IsAuthenticated)
+                    {
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle d-flex align-items-center" id="navbarDropdown" href="#" role="button" onclick="toggleUserDropdown()" aria-expanded="false">
+                                <i class="bi bi-person-circle fs-3"></i>
+                                <span class="ms-2">@User.Identity.Name</span>
+                            </a>
+                            <ul class="dropdown-menu dropdown-menu-end" id="userDropdownMenu" aria-labelledby="navbarDropdown" style="display: none;">
+                                <li>
+                                    <a class="dropdown-item" asp-controller="Profile" asp-action="Index">
+                                        <i class="fas fa-user me-2"></i>Mi Perfil
+                                    </a>
+                                </li>
+                                <li>
+                                    <hr class="dropdown-divider" />
+                                </li>
+                                <li>
+                                    <a class="dropdown-item" asp-controller="Login" asp-action="Logout">
+                                        <i class="fas fa-sign-out-alt me-2"></i>Logout
+                                    </a>
+                                </li>
+                            </ul>
+                        </li>
+                    }
+                </ul>
+                <!--end::End Navbar Links-->
+            </div>
+            <!--end::Container-->
+        </nav>
+        <!--end::Header-->
+        <!--begin::Sidebar-->
+        <aside class="app-sidebar bg-body-secondary shadow" data-bs-theme="dark">
+            <!--begin::Sidebar Brand-->
+            <div class="sidebar-brand">
+                <!--begin::Brand Link-->
+                <a asp-controller="Home" asp-action="Index" class="brand-link">
+                    <!--begin::Brand Image-->
+                    <img src="~/Content/dist/assets/img/M.png" alt="InventorySYS Logo" class="brand-image opacity-75 shadow">
+                    <!--end::Brand Image-->
+                    <!--begin::Brand Text-->
+                    <span class="brand-text fw-light">Inventory Sys</span>
+                    <!--end::Brand Text-->
+                </a>
+                <!--end::Brand Link-->
+            </div>
+            <!--end::Sidebar Brand-->
+            <!--begin::Sidebar Wrapper-->
+            <div class="sidebar-wrapper">
+                <nav class="mt-2">
+                    <!--begin::Sidebar Menu-->
+                    <ul class="nav sidebar-menu flex-column" data-lte-toggle="treeview" role="menu" data-accordion="false">
+
+                        <!-- Inicio -->
+                        <li class="nav-item">
+                            <a asp-controller="Home" asp-action="Index" class="nav-link">
+                                <i class="nav-icon bi bi-house"></i>
+                                <p>Inicio</p>
+                            </a>
+                        </li>
+
+                        <!-- Dashboard -->
+                        <li class="nav-item">
+                            <a asp-controller="Dashboard" asp-action="Index" class="nav-link">
+                                <i class="nav-icon bi bi-clock"></i>
+                                <p>Dashboard</p>
+                            </a>
+                        </li>
+
+                        <!-- Administrador -->
+                        @{
+                            bool canAccessAdministrador =
+                            RolePermissionHelper.CanAccessModule(userRole, RolePermissionHelper.SystemModule.Users) ||
+                            RolePermissionHelper.CanAccessModule(userRole, RolePermissionHelper.SystemModule.Roles);
+                        }
+
+                        @if (canAccessAdministrador)
+                        {
+                            <li class="nav-item" id="nav-administrador">
+                                <a href="#administradorSubmenu" data-bs-toggle="collapse" class="nav-link">
+                                    <i class="nav-icon bi bi-person"></i>
+                                    <p>
+                                        Administrador
+                                        <i class="right bi bi-chevron-down"></i>
+                                    </p>
+                                </a>
+                                <ul class="collapse" id="administradorSubmenu">
+                                    @if (RolePermissionHelper.CanAccessModule(userRole, RolePermissionHelper.SystemModule.Users))
+                                    {
+                                        <li class="nav-item" id="nav-usuarios" data-item="Users">
+                                            <a asp-controller="Users" asp-action="Index" class="nav-link">
+                                                <i class="nav-icon bi bi-person"></i>
+                                                <p>Usuarios</p>
+                                            </a>
+                                        </li>
+                                    }
+
+                                    @if (RolePermissionHelper.CanAccessModule(userRole, RolePermissionHelper.SystemModule.Roles))
+                                    {
+                                        <li class="nav-item" id="nav-roles" data-item="Roles">
+                                            <a asp-controller="Roles" asp-action="Index" class="nav-link">
+                                                <i class="nav-icon bi bi-person-gear"></i>
+                                                <p>Roles</p>
+                                            </a>
+                                        </li>
+                                    }
+
+                                    @if (RolePermissionHelper.CanAccessModule(userRole, RolePermissionHelper.SystemModule.Roles))
+                                    {
+                                        <li class="nav-item" id="nav-logs" data-item="Logs">
+                                            <a asp-controller="AuditLogs" asp-action="Index" class="nav-link">
+                                                <i class="nav-icon bi bi-person-gear"></i>
+                                                <p>Logs</p>
+                                            </a>
+                                        </li>
+                                    }
+                                </ul>
+                            </li>
+                        }
+
+                        <!-- Catálogo -->
+                        @{
+                            bool canAccessCatalogo =
+                            RolePermissionHelper.CanAccessModule(userRole, RolePermissionHelper.SystemModule.Collections) ||
+                            RolePermissionHelper.CanAccessModule(userRole, RolePermissionHelper.SystemModule.Formats) ||
+                            RolePermissionHelper.CanAccessModule(userRole, RolePermissionHelper.SystemModule.Finitures) ||
+                            RolePermissionHelper.CanAccessModule(userRole, RolePermissionHelper.SystemModule.Sites);
+                        }
+
+                        @if (canAccessCatalogo)
+                        {
+                            <li class="nav-item" id="nav-catalogo">
+                                <a href="#catalogoSubmenu" data-bs-toggle="collapse" class="nav-link">
+                                    <i class="nav-icon bi bi-grid-3x3-gap"></i>
+                                    <p>
+                                        Catálogo
+                                        <i class="right bi bi-chevron-down"></i>
+                                    </p>
+                                </a>
+                                <ul class="collapse" id="catalogoSubmenu">
+                                    @if (RolePermissionHelper.CanAccessModule(userRole, RolePermissionHelper.SystemModule.Collections))
+                                    {
+                                        <li class="nav-item" id="nav-colecciones" data-item="Collections">
+                                            <a asp-controller="Collections" asp-action="Index" class="nav-link">
+                                                <i class="nav-icon bi bi-collection"></i>
+                                                <p>Colecciones</p>
+                                            </a>
+                                        </li>
+                                    }
+
+                                    @if (RolePermissionHelper.CanAccessModule(userRole, RolePermissionHelper.SystemModule.Formats))
+                                    {
+                                        <li class="nav-item" id="nav-formatos" data-item="Formats">
+                                            <a asp-controller="Formats" asp-action="Index" class="nav-link">
+                                                <i class="nav-icon bi bi-rulers"></i>
+                                                <p>Formatos</p>
+                                            </a>
+                                        </li>
+                                    }
+
+                                    @if (RolePermissionHelper.CanAccessModule(userRole, RolePermissionHelper.SystemModule.Finitures))
+                                    {
+                                        <li class="nav-item" id="nav-acabados" data-item="Finitures">
+                                            <a asp-controller="Finitures" asp-action="Index" class="nav-link">
+                                                <i class="nav-icon bi bi-palette"></i>
+                                                <p>Acabados</p>
+                                            </a>
+                                        </li>
+                                    }
+
+                                    @if (RolePermissionHelper.CanAccessModule(userRole, RolePermissionHelper.SystemModule.Sites))
+                                    {
+                                        <li class="nav-item" id="nav-sitios" data-item="Sites">
+                                            <a asp-controller="Sites" asp-action="Index" class="nav-link">
+                                                <i class="nav-icon bi bi-geo-alt-fill"></i>
+                                                <p>Sitios</p>
+                                            </a>
+                                        </li>
+                                    }
+                                </ul>
+                            </li>
+                        }
+
+                        <!-- Stock -->
+                        @{
+                            bool canAccessStock =
+                            RolePermissionHelper.CanAccessModule(userRole, RolePermissionHelper.SystemModule.Materials) ||
+                            RolePermissionHelper.CanAccessModule(userRole, RolePermissionHelper.SystemModule.MaterialTransactions) ||
+                            RolePermissionHelper.CanAccessModule(userRole, RolePermissionHelper.SystemModule.DetailMovements);
+                        }
+
+                        @if (canAccessStock)
+                        {
+                            <li class="nav-item" id="nav-stock">
+                                <a href="#stockSubmenu" data-bs-toggle="collapse" class="nav-link">
+                                    <i class="nav-icon bi bi-boxes"></i>
+                                    <p>
+                                        Stock
+                                        <i class="right bi bi-chevron-down"></i>
+                                    </p>
+                                </a>
+                                <ul class="collapse" id="stockSubmenu">
+                                    @if (RolePermissionHelper.CanAccessModule(userRole, RolePermissionHelper.SystemModule.Materials))
+                                    {
+                                        <li class="nav-item" id="nav-materiales" data-item="Materials">
+                                            <a asp-controller="Materials" asp-action="Index" class="nav-link">
+                                                <i class="nav-icon bi bi-box-seam"></i>
+                                                <p>Materiales</p>
+                                            </a>
+                                        </li>
+                                    }
+
+                                    @if (RolePermissionHelper.CanAccessModule(userRole, RolePermissionHelper.SystemModule.MaterialTransactions))
+                                    {
+                                        <li class="nav-item" id="nav-transacciones" data-item="MaterialTransactions">
+                                            <a asp-controller="MaterialTransactions" asp-action="Index" class="nav-link">
+                                                <i class="nav-icon bi bi-arrow-left-right"></i>
+                                                <p>Transacción<br />Material</p>
+                                            </a>
+                                        </li>
+                                    }
+
+                                    @if (RolePermissionHelper.CanAccessModule(userRole, RolePermissionHelper.SystemModule.DetailMovements))
+                                    {
+                                        <li class="nav-item" id="nav-detalles" data-item="DetailMovements">
+                                            <a asp-controller="DetailMovements" asp-action="Index" class="nav-link">
+                                                <i class="nav-icon bi bi-list-check"></i>
+                                                <p>Detalle<br />Movimiento</p>
+                                            </a>
+                                        </li>
+                                    }
+                                </ul>
+                            </li>
+                        }
+
+                        <!-- Reportes -->
+                        @{
+                            bool canAccessReportes =
+                            RolePermissionHelper.CanAccessModule(userRole, RolePermissionHelper.SystemModule.ReporteMaterials) ||
+                            RolePermissionHelper.CanAccessModule(userRole, RolePermissionHelper.SystemModule.ReporteTransactions);
+                        }
+
+                        @if (canAccessReportes)
+                        {
+                            <li class="nav-item" id="nav-reportes">
+                                <a href="#reportesSubmenu" data-bs-toggle="collapse" class="nav-link">
+                                    <i class="nav-icon bi bi-file-text"></i>
+                                    <p>
+                                        Reportes
+                                        <i class="right bi bi-chevron-down"></i>
+                                    </p>
+                                </a>
+                                <ul class="collapse" id="reportesSubmenu">
+                                    @if (RolePermissionHelper.CanAccessModule(userRole, RolePermissionHelper.SystemModule.ReporteMaterials))
+                                    {
+                                        <li class="nav-item" id="nav-reporte-materiales" data-item="ReporteMaterials">
+                                            <a asp-controller="Reports" asp-action="ReportsMaterials" class="nav-link">
+                                                <i class="nav-icon bi bi-file-earmark-spreadsheet"></i>
+                                                <p>Reporte<br />Materiales</p>
+                                            </a>
+                                        </li>
+                                    }
+
+                                    @if (RolePermissionHelper.CanAccessModule(userRole, RolePermissionHelper.SystemModule.ReporteTransactions))
+                                    {
+                                        <li class="nav-item" id="nav-reporte-transacciones" data-item="ReporteTransactions">
+                                            <a asp-controller="Reports" asp-action="ReportsTransactions" class="nav-link">
+                                                <i class="nav-icon bi bi-file-earmark-text"></i>
+                                                <p>Reporte<br />Transacciones</p>
+                                            </a>
+                                        </li>
+                                    }
+                                </ul>
+                            </li>
+                        }
+                    </ul>
+                    <!--end::Sidebar Menu-->
+                </nav>
+            </div>
+            <!--end::Sidebar Wrapper-->
+        </aside>
+        <!--end::Sidebar-->
+        <!--begin::App Main-->
+        <main class="app-main">
+            <!--begin::App Content Header-->
+            @RenderBody()
+        </main>
+        <!--end::App Main-->
+        <!--begin::Footer-->
+        <footer class="app-footer">
+            <!--begin::To the end-->
+            <div class="float-end d-none d-sm-inline"><b>Version</b> 0.9.0-beta</div>
+            <!--end::To the end-->
+            <!--begin::Copyright-->
+            <strong>
+                Copyright &copy; 2024&nbsp;
+                <a href="https://www.mirage.it/cr/en.io" class="text-decoration-none">MIrage CR</a>.
+            </strong>
+            All rights reserved.
+            <!--end::Copyright-->
+        </footer>
+        <!--end::Footer-->
+    </div>
+    <!--end::App Wrapper-->
+    <!--begin::Scripts-->
+    <!-- jQuery PRIMERO - AGREGAR ESTA LÍNEA -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+    <!-- DataTables -->
+    <script type="text/javascript" src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.js"></script>
+    <!-- AGREGAR ESTAS LÍNEAS: -->
+    <!-- Buttons extension -->
+    <script type="text/javascript" src="https://cdn.datatables.net/buttons/2.4.2/js/dataTables.buttons.min.js"></script>
+
+    <!-- Para exportar a Excel y CSV -->
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+
+    <!-- Para exportar a PDF -->
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.53/pdfmake.min.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.53/vfs_fonts.js"></script>
+
+    <!-- Botones específicos -->
+    <script type="text/javascript" src="https://cdn.datatables.net/buttons/2.4.2/js/buttons.html5.min.js"></script>
+    <script type="text/javascript" src="https://cdn.datatables.net/buttons/2.4.2/js/buttons.print.min.js"></script>
+    <script type="text/javascript" src="https://cdn.datatables.net/buttons/2.4.2/js/buttons.colVis.min.js"></script>
+
+
+    <!--begin::Third Party Plugin(OverlayScrollbars)-->
+    <script src="https://cdn.jsdelivr.net/npm/overlayscrollbars@2.3.0/browser/overlayscrollbars.browser.es6.min.js" integrity="sha256-H2VM7BKda+v2Z4+DRy69uknwxjyDRhszjXFhsL4gD3w=" crossorigin="anonymous"></script>
+    <!--end::Third Party Plugin(OverlayScrollbars)-->
+    <!--begin::Required Plugin(Popper.js for Bootstrap 5)-->
+    <script src="https://unpkg.com/@@popperjs/core@@2/dist/umd/popper.min.js"></script>
+    <!--end::Required Plugin(Popper.js for Bootstrap 5)-->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!--begin::Required Plugin(AdminLTE)-->
+    <script src="~/Content/dist/js/adminlte.js"></script>
+    <!--end::Required Plugin(AdminLTE)-->
+    <!--begin::OverlayScrollbars Configure-->
+    <script>
+            const SELECTOR_SIDEBAR_WRAPPER = ".sidebar-wrapper";
+            const Default = {
+                scrollbarTheme: "os-theme-light",
+                scrollbarAutoHide: "leave",
+                scrollbarClickScroll: true,
+            };
+            document.addEventListener("DOMContentLoaded", function () {
+                const sidebarWrapper = document.querySelector(SELECTOR_SIDEBAR_WRAPPER);
+                if (
+                    sidebarWrapper &&
+                    typeof OverlayScrollbarsGlobal?.OverlayScrollbars !== "undefined"
+                ) {
+                    OverlayScrollbarsGlobal.OverlayScrollbars(sidebarWrapper, {
+                        scrollbars: {
+                            theme: Default.scrollbarTheme,
+                            autoHide: Default.scrollbarAutoHide,
+                            clickScroll: Default.scrollbarClickScroll,
+                        },
+                    });
+                }
+            });
+
+        // Initialize DataTables
+        $(document).ready(function() {
+            $('.dataTables1').DataTable({
+                language: {
+                    url: '../../Content/dist/js/es-MX.json'
+                },
+                stripeClasses: [], // Clases de estilos para filas alternas
+                headerCallback: function (thead, data, start, end, display) {
+                    $(thead).find('th').css({
+                        'background-color': '#333', // Estilo de fondo del encabezado
+                        'color': 'white', // Color del texto del encabezado
+                        'text-align': 'center' // Centrar el texto del encabezado
+                    });
+                }
+            });
+        });
+    </script>
+
+    <script>
+        function toggleUserDropdown() {
+            const dropdown = document.getElementById('userDropdownMenu');
+            const isVisible = dropdown.style.display === 'block';
+
+            if (isVisible) {
+                dropdown.style.display = 'none';
+                document.getElementById('navbarDropdown').setAttribute('aria-expanded', 'false');
+            } else {
+                dropdown.style.display = 'block';
+                document.getElementById('navbarDropdown').setAttribute('aria-expanded', 'true');
+            }
+        }
+
+        // Cerrar dropdown al hacer clic fuera
+        document.addEventListener('click', function(event) {
+            const dropdown = document.getElementById('userDropdownMenu');
+            const trigger = document.getElementById('navbarDropdown');
+
+            if (dropdown && trigger && !trigger.contains(event.target)) {
+                dropdown.style.display = 'none';
+                trigger.setAttribute('aria-expanded', 'false');
+            }
+        });
+
+        // Cerrar dropdown al presionar Escape
+        document.addEventListener('keydown', function(event) {
+            if (event.key === 'Escape') {
+                const dropdown = document.getElementById('userDropdownMenu');
+                if (dropdown) {
+                    dropdown.style.display = 'none';
+                    document.getElementById('navbarDropdown').setAttribute('aria-expanded', 'false');
+                }
+            }
+        });
+    </script>
+
+    <!--end::OverlayScrollbars Configure-->
+    <!-- OPTIONAL SCRIPTS -->
+    <script src="https://cdn.jsdelivr.net/npm/apexcharts@3.37.1/dist/apexcharts.min.js" integrity="sha256-+vh8GkaU7C9/wbSLIcwq82tQ2wTf44aOHA8HlBMwRI8=" crossorigin="anonymous"></script>
+
+    <!-- jsvectormap -->
+    <script src="https://cdn.jsdelivr.net/npm/jsvectormap@1.5.3/dist/js/jsvectormap.min.js" integrity="sha256-/t1nN2956BT869E6H4V1dnt0X5pAQHPytli+1nTZm2Y=" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jsvectormap@1.5.3/dist/maps/world.js" integrity="sha256-XPpPaZlU8S/HWf7FZLAncLg2SAkP8ScUTII89x9D3lY=" crossorigin="anonymous"></script>
+
+    @await RenderSectionAsync("Scripts", required: false)
+    <!--end::Scripts-->
+</body>
+<!--end::Body-->
 </html>
